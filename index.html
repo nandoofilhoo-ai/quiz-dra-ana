@@ -2,9 +2,8 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Avaliação de Viabilidade Bancária - Dra. Ana Maria Magalhães</title>
-    <!-- Google Fonts -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Triagem bancária — Dra. Ana Maria Magalhães</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
@@ -13,400 +12,162 @@
 <body>
     <main class="stage">
         <div class="shell">
-            <!-- ASIDE DE AVALIAÇÃO E CREDIBILIDADE -->
             <aside class="aside">
                 <div class="brand brand-aside">
-                    <div class="brand-crest">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                    <div class="brand-crest" aria-hidden="true">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 2 7l10 5 10-5-10-5ZM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
                     </div>
                     <div class="brand-info">
                         <h2>Dra. Ana Maria Magalhães</h2>
-                        <span class="brand-tag">Direito Bancário & Defesa do Consumidor</span>
+                        <span class="brand-tag">Direito Bancário &amp; Defesa do Consumidor</span>
                     </div>
                 </div>
-
                 <div class="aside-main">
-                    <div class="eyebrow">Uma primeira leitura</div>
-                    <h1 class="aside-title">Sua empresa está com um problema bancário? <em>Vamos entender o que aconteceu.</em></h1>
-                    
-                    <div class="vcard">
-                        <div class="vcard-label">Como funciona</div>
-                        <div class="vcard-num">Atendimento <span>digital</span></div>
-                        <div class="vcard-det">Você responde algumas perguntas. Depois, um advogado avalia o contrato, o valor envolvido e o próximo passo.</div>
+                    <div class="eyebrow">Direito bancário</div>
+                    <h1 class="aside-title">Problema com banco? <em>Entenda se o caso merece análise jurídica.</em></h1>
+                    <div class="aside-proof">
+                        <div class="aside-proof-label">Atuação focada</div>
+                        <div class="aside-proof-title">Empresas e casos bancários selecionados</div>
+                        <p>Uma triagem objetiva identifica urgência, valor envolvido e os documentos necessários para a análise.</p>
                     </div>
-
+                    <div class="aside-signals" aria-label="Diferenciais do atendimento">
+                        <div><strong>Triagem direcionada</strong><span>Perguntas específicas para cada situação bancária.</span></div>
+                        <div><strong>Análise individual</strong><span>Um advogado avalia o caso após suas respostas.</span></div>
+                        <div><strong>Atendimento sigiloso</strong><span>Dados tratados conforme a LGPD.</span></div>
+                    </div>
                 </div>
-
-                <div class="aside-foot">
-                    <span>OAB/BA · Atuação conforme o Código de Ética da OAB</span>
-                </div>
+                <div class="aside-foot"><span>OAB/BA · Atuação conforme o Código de Ética da OAB</span></div>
             </aside>
 
-            <!-- CARD PRINCIPAL DO QUIZ -->
             <div class="card" id="quizContainer">
-                <!-- BARRA DE PROGRESSO -->
-                <div class="progress-wrap" id="progressWrap">
-                    <div class="progress-meta">
-                        <span id="stepLabel">Pergunta 1 de 4</span>
-                        <b id="pctLabel">25%</b>
-                    </div>
-                    <div class="track">
-                        <div class="bar" id="progressBar" style="width: 25%;"></div>
-                    </div>
+                <div class="progress-wrap" id="progressWrap" aria-label="Progresso da triagem">
+                    <div class="track"><div class="bar" id="progressBar" style="width: 10%;"></div></div>
                 </div>
 
-                <!-- CORPO DO QUIZ -->
                 <div class="body" id="quizBody">
-                    
-                    <!-- ETAPA 1: SELEÇÃO DA DOR / PROBLEMA -->
                     <section class="quiz-step active" id="step1">
                         <div class="eyebrow">Vamos começar</div>
-                        <div class="profile-switch" role="group" aria-label="Perfil do atendimento">
-                            <button type="button" class="profile-btn is-active" data-profile="empresa" onclick="setProfile('empresa', this)">Minha empresa</button>
-                            <button type="button" class="profile-btn" data-profile="pessoal" onclick="setProfile('pessoal', this)">Meu caso pessoal</button>
-                        </div>
-                        <h2 class="q-title">Qual situação bancária descreve melhor a sua empresa?</h2>
-                        <p class="q-help">Começamos pelo ponto mais urgente. Escolha uma opção para continuar.</p>
+                        <h2 class="q-title">O que está acontecendo com você?</h2>
+                        <p class="q-help">Se for mais de uma coisa, escolha a mais urgente.</p>
 
                         <div class="opts entry-options" id="entryOptions">
-                            <button class="opt" onclick="handleOptionSelect(1, 'Processo bancário', 'processo')">
+                            <button class="opt" type="button" onclick="handleOptionSelect(1, 'Banco me processou', 'processo')">
+                                <div class="opt-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h9l3 3v15H6zM15 3v4h4M9 11h6M9 15h6"/></svg></div>
+                                <div class="opt-txt"><strong>Banco me processou</strong><span>O banco entrou na Justiça ou recebi um oficial de justiça.</span></div><span class="opt-arrow">→</span>
+                            </button>
+                            <button class="opt" type="button" onclick="handleOptionSelect(1, 'Empresa endividada', 'empresa')">
                                 <div class="opt-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V6l8-3 8 3v14M2 20h20M8 10h1M15 10h1M8 14h1M15 14h1"/></svg></div>
-                                <div class="opt-txt"><strong>Processo bancário</strong><span>Recebi uma cobrança judicial, aviso de penhora ou outro documento do processo.</span></div>
-                                <span class="opt-arrow">→</span>
+                                <div class="opt-txt"><strong>Empresa endividada</strong><span>Minha empresa deve ao banco e está sem caixa.</span></div><span class="opt-arrow">→</span>
                             </button>
-                            <button class="opt" onclick="handleOptionSelect(1, 'Conta bloqueada', 'conta_bloqueada')">
-                                <div class="opt-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h3"/></svg></div>
-                                <div class="opt-txt"><strong>Conta bloqueada</strong><span>O dinheiro da empresa ficou bloqueado pelo banco ou pela Justiça.</span></div>
-                                <span class="opt-arrow">→</span>
+                            <button class="opt" type="button" onclick="handleOptionSelect(1, 'Conta bloqueada', 'bloqueio')">
+                                <div class="opt-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10h18M5 10v8M9 10v8M15 10v8M19 10v8M2 20h20M12 3l9 5H3z"/></svg></div>
+                                <div class="opt-txt"><strong>Conta bloqueada</strong><span>A conta da minha empresa foi bloqueada.</span></div><span class="opt-arrow">→</span>
                             </button>
-                            <button class="opt" onclick="handleOptionSelect(1, 'Recebíveis retidos', 'recebiveis')">
-                                <div class="opt-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 18V7h16v11M2 20h20M7 11h10M7 14h6"/></svg></div>
-                                <div class="opt-txt"><strong>Recebíveis retidos</strong><span>Vendas da maquininha, duplicatas ou valores da empresa estão retidos.</span></div>
-                                <span class="opt-arrow">→</span>
+                            <button class="opt" type="button" onclick="handleOptionSelect(1, 'Recebíveis retidos', 'recebiveis')">
+                                <div class="opt-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg></div>
+                                <div class="opt-txt"><strong>Recebíveis retidos</strong><span>O banco está segurando as vendas da maquininha ou as duplicatas.</span></div><span class="opt-arrow">→</span>
                             </button>
-                            <button class="opt" onclick="handleOptionSelect(1, 'Empresa endividada', 'empresa_endividada')">
-                                <div class="opt-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V6l8-3 8 3v14M2 20h20M8 10h1M15 10h1M8 14h1M15 14h1"/></svg></div>
-                                <div class="opt-txt"><strong>Empresa endividada</strong><span>Dívidas bancárias, capital de giro ou contratos estão pressionando o caixa.</span></div>
-                                <span class="opt-arrow">→</span>
+                            <button class="opt" type="button" onclick="handleOptionSelect(1, 'Sócio ou avalista', 'avalista')">
+                                <div class="opt-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3"/><path d="M5 20a7 7 0 0 1 14 0"/></svg></div>
+                                <div class="opt-txt"><strong>Sócio ou avalista</strong><span>Assinei pela empresa e meu patrimônio pessoal está em risco.</span></div><span class="opt-arrow">→</span>
                             </button>
-                            <button class="opt" onclick="handleOptionSelect(1, 'Sócio ou avalista', 'avalista')">
-                                <div class="opt-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3"/><path d="M5 20a7 7 0 0 1 14 0M18 5l3 3-3 3"/></svg></div>
-                                <div class="opt-txt"><strong>Sócio ou avalista</strong><span>Assinei pela empresa e meu patrimônio pessoal está em risco.</span></div>
-                                <span class="opt-arrow">→</span>
-                            </button>
-                            <button class="opt" onclick="handleOptionSelect(1, 'Imóvel em atraso', 'imovel')">
+                            <button class="opt" type="button" onclick="handleOptionSelect(1, 'Imóvel em atraso', 'imovel')">
                                 <div class="opt-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m3 11 9-7 9 7M5 10v10h14V10M9 20v-5h6v5"/></svg></div>
-                                <div class="opt-txt"><strong>Imóvel em atraso</strong><span>As parcelas do financiamento do imóvel estão atrasadas ou sob cobrança.</span></div>
-                                <span class="opt-arrow">→</span>
+                                <div class="opt-txt"><strong>Imóvel em atraso</strong><span>Atrasei as parcelas do financiamento do meu imóvel.</span></div><span class="opt-arrow">→</span>
                             </button>
-                            <button class="opt" onclick="handleOptionSelect(1, 'Falsa central', 'golpe_central')">
-                                <div class="opt-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2M8 3l-2 2M16 3l2 2"/></svg></div>
-                                <div class="opt-txt"><strong>Falsa central</strong><span>Uma ligação se passou pelo banco e causou uma operação ou prejuízo.</span></div>
-                                <span class="opt-arrow">→</span>
-                            </button>
-                            <button class="opt" onclick="handleOptionSelect(1, 'Dívidas no exterior', 'exterior')">
-                                <div class="opt-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></div>
-                                <div class="opt-txt"><strong>Dívidas no exterior</strong><span>Preciso movimentar dinheiro ou proteger patrimônio ligado ao Brasil.</span></div>
-                                <span class="opt-arrow">→</span>
-                            </button>
-                            <button class="opt" onclick="handleOptionSelect(1, 'Servidor público', 'servidor')">
+                            <button class="opt" type="button" onclick="handleOptionSelect(1, 'Servidor de carreira', 'servidor')">
                                 <div class="opt-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h5"/></svg></div>
-                                <div class="opt-txt"><strong>Servidor público</strong><span>Renovo empréstimos há anos e a dívida não diminui.</span></div>
-                                <span class="opt-arrow">→</span>
+                                <div class="opt-txt"><strong>Servidor de carreira</strong><span>Sou servidor de carreira e renovo empréstimos há anos sem ver a dívida diminuir.</span></div><span class="opt-arrow">→</span>
                             </button>
-                            <button class="opt" onclick="handleOptionSelect(1, 'Outro caso bancário', 'outro')">
-                                <div class="opt-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg></div>
-                                <div class="opt-txt"><strong>Outro caso bancário</strong><span>Tenho outro assunto bancário e quero explicar o que está acontecendo.</span></div>
-                                <span class="opt-arrow">→</span>
+                            <button class="opt" type="button" onclick="handleOptionSelect(1, 'Golpe falsa central', 'golpe')">
+                                <div class="opt-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7l.4 2.6a2 2 0 0 1-.6 1.8L7.6 9.4a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 1.8-.6l2.6.4a2 2 0 0 1 1.7 2z"/></svg></div>
+                                <div class="opt-txt"><strong>Golpe falsa central</strong><span>Caí no golpe da falsa central do banco.</span></div><span class="opt-arrow">→</span>
                             </button>
-                        </div>
-                        <div class="opts legacy-entry-options" aria-hidden="true">
-                            <button class="opt" onclick="handleOptionSelect(1, 'Empréstimo Indevido', 'consignado')">
-                                <div class="opt-ico">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                                </div>
-                                <div class="opt-txt">
-                                    <strong>Empréstimo ou desconto que eu NÃO fiz</strong>
-                                    <span>Descontos indevidos no INSS, contracheque ou conta bancária sem sua autorização.</span>
-                                </div>
-                                <span class="opt-arrow">→</span>
+                            <button class="opt" type="button" onclick="handleOptionSelect(1, 'Meu caso é outro', 'outro')">
+                                <div class="opt-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9.8 9a2.3 2.3 0 1 1 3.7 1.8c-.9.7-1.5 1.2-1.5 2.2M12 17h.01"/></svg></div>
+                                <div class="opt-txt"><strong>Meu caso é outro</strong><span>Quero falar com a especialista.</span></div><span class="opt-arrow">→</span>
                             </button>
-
-                            <button class="opt" onclick="handleOptionSelect(1, 'Golpe Bancário', 'golpe')">
-                                <div class="opt-ico">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-                                </div>
-                                <div class="opt-txt">
-                                    <strong>Caí em um Golpe Bancário ou Fraude Pix</strong>
-                                    <span>Falso funcionário, Pix enganoso, boleto falso, conta ou aplicativo invadido.</span>
-                                </div>
-                                <span class="opt-arrow">→</span>
-                            </button>
-
-                            <button class="opt" onclick="handleOptionSelect(1, 'Juros Abusivos', 'juros')">
-                                <div class="opt-ico">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                                </div>
-                                <div class="opt-txt">
-                                    <strong>Contrato com Juros Abusivos ou Dívida Alta</strong>
-                                    <span>Empréstimo pessoal, financiamento ou cheque especial que virou uma bola de neve.</span>
-                                </div>
-                                <span class="opt-arrow">→</span>
-                            </button>
-
-                            <button class="opt" onclick="handleOptionSelect(1, 'Brasileiro no Exterior', 'exterior')">
-                                <div class="opt-ico">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                                </div>
-                                <div class="opt-txt">
-                                    <strong>Moro no Exterior e deixei dívidas no Brasil</strong>
-                                    <span>Dificuldade para remessa de valores, cobranças aos pais ou risco ao patrimônio no Brasil.</span>
-                                </div>
-                                <span class="opt-arrow">→</span>
-                            </button>
-
-                            <button class="opt warning" onclick="handleOptionSelect(1, 'Busca e Apreensão', 'busca_apreensao')">
-                                <div class="opt-ico alert">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                                </div>
-                                <div class="opt-txt">
-                                    <strong>Veículo apreendido / Busca e Apreensão sem reserva</strong>
-                                    <span>Carro já apreendido pela justiça ou sem recurso financeiro para quitação.</span>
-                                </div>
-                                <span class="opt-arrow">→</span>
-                            </button>
-
-                            <button class="opt warning" onclick="handleOptionSelect(1, 'Superendividamento', 'superendividamento')">
-                                <div class="opt-ico alert">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
-                                </div>
-                                <div class="opt-txt">
-                                    <strong>Superendividamento geral (Quero renegociar tudo)</strong>
-                                    <span>Múltiplas dívidas acumuladas com renda comprometida acima da capacidade.</span>
-                                </div>
-                                <span class="opt-arrow">→</span>
+                            <button class="opt" type="button" onclick="handleOptionSelect(1, 'Dívidas no exterior', 'exterior')">
+                                <div class="opt-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></div>
+                                <div class="opt-txt"><strong>Dívidas no exterior</strong><span>Moro fora do Brasil e tenho dívida ou patrimônio aqui.</span></div><span class="opt-arrow">→</span>
                             </button>
                         </div>
                     </section>
 
-                    <!-- ETAPA 2: DETALHAMENTO ESPECÍFICO DA DOR -->
                     <section class="quiz-step" id="step2">
-                        <button class="back-btn" onclick="goToStep(1)">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-                            Voltar
-                        </button>
-                        <div class="eyebrow">Agora, um detalhe</div>
-                        <h2 class="q-title" id="step2Title">Onde está ocorrendo essa cobrança ou problema?</h2>
-                        <p class="q-help" id="step2Help">Selecione o canal ou local do desconto para direcionarmos a fundamentação correta.</p>
-
-                        <div class="opts" id="step2Options">
-                            <!-- Opções dinâmicas preenchidas via JS conforme a dor selecionada na Etapa 1 -->
-                        </div>
+                        <button class="back-btn" type="button" onclick="goToStep(1)"><span aria-hidden="true">←</span> Voltar ao início</button>
+                        <div class="eyebrow">Uma pergunta de cada vez</div>
+                        <h2 class="q-title" id="step2Title"></h2>
+                        <p class="q-help" id="step2Help">Escolha uma opção para continuar.</p>
+                        <div class="opts" id="step2Options"></div>
                     </section>
 
-                    <!-- ETAPA 3: FAIXA DE VALOR -->
-                    <section class="quiz-step" id="step3">
-                        <button class="back-btn" onclick="goToStep(2)">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-                            Voltar
-                        </button>
-                        <div class="eyebrow">Por fim, o valor</div>
-                        <h2 class="q-title">Qual é o valor aproximado envolvido?</h2>
-                        <p class="q-help">Pode ser uma estimativa do prejuízo, das parcelas ou do saldo do contrato.</p>
-
-                        <div class="opts" id="valueOptions">
-                            <button class="opt" onclick="handleOptionSelect(3, 'Até R$ 2 mil', '<2k')">
-                                <div class="opt-ico">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                                </div>
-                                <div class="opt-txt">
-                                    <strong>Até R$ 2.000,00</strong>
-                                    <span>Valores de menor montante acumulado.</span>
-                                </div>
-                                <span class="opt-arrow">→</span>
-                            </button>
-
-                            <button class="opt" onclick="handleOptionSelect(3, 'R$ 2 mil a R$ 10 mil', '2-10k')">
-                                <div class="opt-ico">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                                </div>
-                                <div class="opt-txt">
-                                    <strong>Entre R$ 2.000,00 e R$ 10.000,00</strong>
-                                    <span>Prejuízo intermediário acumulado.</span>
-                                </div>
-                                <span class="opt-arrow">→</span>
-                            </button>
-
-                            <button class="opt" onclick="handleOptionSelect(3, 'R$ 10 mil a R$ 50 mil', '10-50k')">
-                                <div class="opt-ico highlight">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                                </div>
-                                <div class="opt-txt">
-                                    <strong>Entre R$ 10.000,00 e R$ 50.000,00</strong>
-                                    <span>Valores expressivos ou contratos acumulados.</span>
-                                </div>
-                                <span class="opt-arrow">→</span>
-                            </button>
-
-                            <button class="opt" onclick="handleOptionSelect(3, 'Acima de R$ 50 mil', '>50k')">
-                                <div class="opt-ico highlight">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                                </div>
-                                <div class="opt-txt">
-                                    <strong>Acima de R$ 50.000,00</strong>
-                                    <span>Fraudes de alto valor ou grande prejuízo financeiro.</span>
-                                </div>
-                                <span class="opt-arrow">→</span>
-                            </button>
-                        </div>
-                    </section>
-
-                    <!-- ANÁLISE FINAL -->
                     <section class="quiz-step analysis-step" id="analysisStep" aria-live="polite" aria-busy="true">
-                    <div class="analysis-orb" aria-hidden="true"><span></span></div>
-                    <div class="eyebrow">Só mais um momento</div>
-                    <h2 class="q-title" id="analysisTitle">Analisando suas respostas</h2>
-                    <p class="q-help" id="analysisDetail">Estamos organizando as informações para preparar a orientação mais adequada.</p>
-                    <div class="analysis-status" aria-hidden="true">
-                        <span class="status-dot"></span>
-                        <span id="analysisStatus">Lendo suas respostas</span>
-                    </div>
+                        <div class="analysis-spinner" aria-hidden="true"><span></span></div>
+                        <div class="eyebrow">Só mais um momento</div>
+                        <h2 class="q-title">Analisando suas respostas</h2>
+                        <p class="q-help">Estamos organizando as informações para preparar a orientação adequada.</p>
+                        <div class="analysis-status" aria-hidden="true"><span class="status-dot"></span><span id="analysisStatus">Lendo suas respostas</span></div>
                     </section>
 
-                    <!-- ETAPA 4: FORMULÁRIO DE CAPTURA DE LEAD QUALIFICADO OU OPÇÃO DE LAUDO -->
                     <section class="quiz-step success-step" id="step4">
                         <div class="success-hero">
-                            <div class="result-badge success">Próximo passo</div>
-                            <h2 class="q-title" id="successTitle">Boas notícias!<br>Podemos analisar os detalhes do seu caso.</h2>
-                            <p class="q-help" id="successLead">A triagem indica um caminho possível. Cada caso é único e será avaliado individualmente.</p>
+                            <div class="result-badge success">Resultado da triagem</div>
+                            <h2 class="q-title" id="successTitle">Entendi.</h2>
+                            <p class="q-help" id="successLead"></p>
                         </div>
-                        <button class="back-btn" onclick="goToStep(3)">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-                            Voltar
-                        </button>
-                        <div class="result-badge success">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                            Próximo passo
-                        </div>
-                        <h2 class="q-title">Podemos olhar os detalhes do seu caso.</h2>
-                        <p class="q-help">Deixe seus dados. A equipe responde pelo WhatsApp e orienta o próximo passo.</p>
-
-                        <div class="evidence-card">
-                            <div class="evidence-kicker">✦ O que acontece agora</div>
-                            <div class="evidence-number">3 pontos</div>
-                            <p>serão conferidos antes de qualquer orientação</p>
-                            <div class="evidence-pill"><span></span>Análise individual</div>
-                            <div class="evidence-divider"></div>
-                            <div class="evidence-caption">O que a equipe vai conferir:</div>
-                            <ul class="evidence-list">
-                                <li>Contrato, cobrança e documentos disponíveis</li>
-                                <li>Valor envolvido e impacto para a empresa</li>
-                                <li>Processo, bloqueio ou prazo em andamento</li>
-                            </ul>
-                        </div>
-
+                        <article class="authority-card" id="authorityCard" data-tone="analysis">
+                            <div class="authority-kicker">Aderência à análise especializada*</div>
+                            <div class="authority-stat"><strong id="triagePercentage">0,0%</strong><span>compatibilidade indicada pelas respostas da triagem</span></div>
+                            <div class="authority-status" id="authorityStatus">Indicador interno da triagem</div>
+                            <div class="authority-divider"></div>
+                            <h3 id="authorityTitle">Pontos que merecem análise especializada</h3>
+                            <ul class="authority-points" id="authorityPoints"></ul>
+                            <p class="authority-disclaimer">*indicador interno de aderência ao atendimento — não representa probabilidade de êxito nem estatística judicial. Cada caso é único e avaliado individualmente.</p>
+                        </article>
                         <div class="contact-intro">
                             <div class="whatsapp-mark" aria-hidden="true">◔</div>
-                                <div><h3>Falta pouco — fale com um advogado agora</h3><p id="documentsHint">Deixe seus dados. Um especialista entra em contato pelo WhatsApp em poucos minutos.</p></div>
+                            <div><h3>Envie o caso para análise</h3><p id="documentsHint"></p></div>
                         </div>
-
-                        <!-- BOX DE RESUMO DO CASO -->
-                        <div class="summary-card">
-                            <div class="summary-line">
-                                <span class="summary-label">Problema:</span>
-                                <span class="summary-val" id="sumProblema">-</span>
-                            </div>
-                            <div class="summary-line">
-                                <span class="summary-label">Detalhamento:</span>
-                                <span class="summary-val" id="sumDetalhe">-</span>
-                            </div>
-                            <div class="summary-line">
-                                <span class="summary-label">Valor Estimado:</span>
-                                <span class="summary-val" id="sumValor">-</span>
-                            </div>
+                        <div class="laudo-option-box" id="laudoBox" style="display:none">
+                            <div class="laudo-tag">Análise técnica</div>
+                            <h3>Laudo de análise do contrato</h3>
+                            <p>A equipe explicará como funciona, o valor e o que será entregue antes de qualquer contratação.</p>
                         </div>
-
-                        <!-- OPÇÃO DE LAUDO TÉCNICO: valor confirmado pelo atendimento -->
-                        <div class="laudo-option-box" id="laudoBox" style="display: none;">
-                            <div class="laudo-tag">Opção de análise técnica</div>
-                            <h3>Revisão técnica do contrato</h3>
-                            <p>A equipe explica como funciona o laudo, o valor e o que será entregue antes de qualquer contratação.</p>
-                            <a href="#leadForm" class="btn-laudo" id="laudoLink">
-                                Quero receber os detalhes
-                            </a>
-                            <div class="laudo-divider">A contratação só acontece depois da sua confirmação.</div>
-                        </div>
-
-                        <!-- FORMULÁRIO DE LEAD -->
                         <form id="leadForm" onsubmit="handleLeadSubmit(event)">
+                            <label class="consent-field"><input type="checkbox" id="consentimento" required><span>Ao enviar seus dados, você autoriza o nosso contato por WhatsApp ou telefone. Suas informações são tratadas com sigilo, conforme a LGPD.</span></label>
+                            <div class="field"><label for="nome">Para um advogado falar com você, qual é o seu nome completo? <b>*</b></label><input type="text" id="nome" required autocomplete="name" placeholder="Nome e sobrenome"></div>
                             <div class="field">
-                                <label for="nome">Seu nome <b>*</b></label>
-                                <input type="text" id="nome" required placeholder="Digite seu nome completo">
+                                <label for="whatsapp">Qual o seu WhatsApp com DDD? <b>*</b></label>
+                                <div class="phone-input-row">
+                                    <div class="ddi-control" id="ddiControl" hidden><label class="sr-only" for="ddi">DDI</label><input type="text" id="ddi" value="+55" inputmode="tel" maxlength="5" aria-label="Código internacional do país" oninput="applyDdiMask(this)"></div>
+                                    <input type="tel" id="whatsapp" required autocomplete="tel" inputmode="tel" placeholder="(00) 00000-0000" maxlength="18" oninput="applyWhatsAppMask(this)">
+                                </div>
                             </div>
-
-                            <div class="field">
-                                <label for="whatsapp">WhatsApp <b>*</b> <span>— é por aqui que falamos com você</span></label>
-                                <input type="tel" id="whatsapp" required placeholder="(00) 00000-0000" maxlength="15" oninput="applyWhatsAppMask(this)">
-                            </div>
-
                             <div class="field contact-grid">
-                                <div><label for="cidade">Cidade <b>*</b></label><input type="text" id="cidade" required placeholder="Sua cidade"></div>
-                                <div><label for="estado">Estado <b>*</b></label><input type="text" id="estado" required placeholder="UF" maxlength="2"></div>
+                                <div><label for="cidade">Cidade <b>*</b></label><input type="text" id="cidade" required autocomplete="address-level2" placeholder="Sua cidade"></div>
+                                <div><label for="estado">Estado <b>*</b></label><input type="text" id="estado" required autocomplete="address-level1" placeholder="UF" maxlength="2"></div>
                             </div>
-
-                            <div class="field">
-                                <label for="horario">Melhor horário para falarmos <b>*</b></label>
-                                <select id="horario" required>
-                                    <option value="">Selecione</option>
-                                    <option>Manhã</option>
-                                    <option>Tarde</option>
-                                    <option>Noite</option>
-                                </select>
-                            </div>
-
-                            <label class="consent-field"><input type="checkbox" id="consentimento" required><span>Autorizo o contato por WhatsApp ou telefone. Meus dados serão tratados com sigilo, conforme a LGPD.</span></label>
-
-                            <button type="submit" class="cta-btn" id="btnSubmit">
-                                <span>Falar com um advogado agora</span>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                            </button>
+                            <div class="field"><label for="horario">Melhor horário para falarmos <b>*</b></label><select id="horario" required><option value="">Selecione</option><option>Manhã</option><option>Tarde</option><option>Noite</option></select></div>
+                            <button type="submit" class="cta-btn" id="btnSubmit"><span>Enviar para análise</span><span aria-hidden="true">→</span></button>
                         </form>
-
-                        <div class="trust-footer">
-                            <span>🔒 Atendimento sigiloso · Lei Geral de Proteção de Dados (LGPD)</span>
-                        </div>
+                        <div class="trust-footer"><span>🔒 Atendimento sigiloso · LGPD</span></div>
                     </section>
 
-                    <!-- TELA DE NÃO QUALIFICADO (DESQUALIFICAÇÃO TRANSPARENTE E EDUCADORA) -->
                     <section class="quiz-step" id="disqualifiedStep">
-                        <div class="disqualified-icon">
-                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                        </div>
-                        <div class="result-badge calm">Orientação Transparente</div>
-                        <h2 class="q-title" id="disqTitle">Orientação sobre a sua situação</h2>
-                        <p class="q-help" id="disqLead">Com base nas opções selecionadas, o seu caso não se enquadra na nossa atuação de advocacia bancária privada neste momento.</p>
-
-                        <div class="disq-box" id="disqContent">
-                            <!-- Preenchido via JS conforme o motivo (Superendividamento, Busca & Apreensão, RMC exclusivo, etc) -->
-                        </div>
-
-                        <button class="btn-restart" onclick="restartQuiz()">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-                            Refazer Avaliação
-                        </button>
+                        <div class="disqualified-icon" aria-hidden="true">i</div>
+                        <div class="result-badge calm" id="disqBadge">Resposta franca</div>
+                        <h2 class="q-title" id="disqTitle"></h2>
+                        <p class="q-help" id="disqLead"></p>
+                        <div class="disq-box" id="disqContent"></div>
+                        <button class="btn-restart" type="button" onclick="restartQuiz()">Refazer a análise</button>
                     </section>
-
                 </div>
 
-                <!-- FOOTER FIXO DO QUIZ -->
-                <div class="foot">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                    Dra. Ana Maria Magalhães Sociedade Individual de Advocacia · CNPJ: 68.297.341/0001-04
-                </div>
+                <div class="foot">Dra. Ana Maria Magalhães Sociedade Individual de Advocacia · CNPJ: 68.297.341/0001-04</div>
             </div>
         </div>
     </main>
-
-    <script src="script.js"></script>
+    <script src="quiz-flow.js"></script>
 </body>
 </html>
