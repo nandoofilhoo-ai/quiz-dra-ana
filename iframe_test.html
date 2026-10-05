@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página Pai - Teste de Embed iFrame com Auto-Height</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #090d16;
+            color: #e2e8f0;
+            padding: 2rem;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            color: #10b981;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: #94a3b8;
+        }
+
+        .iframe-wrapper {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.02);
+            border: 2px dashed rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 10px;
+            transition: all 0.3s ease;
+        }
+
+        iframe {
+            width: 100%;
+            border: none;
+            border-radius: 12px;
+            transition: height 0.3s ease;
+        }
+
+        .log-box {
+            margin-top: 1.5rem;
+            background: #020617;
+            border: 1px solid #1e293b;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: #38bdf8;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Simulação de Landing Page Pai (iFrame Embed)</h1>
+            <p>O quiz abaixo está dentro de um <code>&lt;iframe&gt;</code> e ajusta sua altura dinamicamente via <code>postMessage</code>.</p>
+        </div>
+
+        <div class="iframe-wrapper">
+            <iframe id="quizIframe" src="index.html" scrolling="no"></iframe>
+        </div>
+
+        <div class="log-box" id="logBox">
+            > Monitor de Eventos postMessage inicializado...<br>
+        </div>
+    </div>
+
+    <script>
+        const iframe = document.getElementById('quizIframe');
+        const logBox = document.getElementById('logBox');
+
+        function logEvent(msg) {
+            const time = new Date().toLocaleTimeString();
+            logBox.innerHTML += `[${time}] ${msg}<br>`;
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+
+        // Escuta as mensagens enviadas pelo quiz (index.html)
+        window.addEventListener('message', (event) => {
+            if (event.data && event.data.quizHeight) {
+                const newHeight = event.data.quizHeight;
+                iframe.style.height = `${newHeight}px`;
+                logEvent(`Recebido postMessage: quizHeight = ${newHeight}px -> Altura do iFrame ajustada!`);
+            }
+        });
+    </script>
+</body>
+</html>

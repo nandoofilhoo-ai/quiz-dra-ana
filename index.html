@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Avaliação de Viabilidade Bancária - Dra. Ana Maria Magalhães</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <main class="stage">
+        <div class="shell">
+            <!-- ASIDE DE AVALIAÇÃO E CREDIBILIDADE (Estilo Rosenbaum Premium) -->
+            <aside class="aside">
+                <div class="brand brand-aside">
+                    <div class="brand-crest">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                    </div>
+                    <div class="brand-info">
+                        <h2>Dra. Ana Maria Magalhães</h2>
+                        <span class="brand-tag">Direito Bancário & Defesa do Consumidor</span>
+                    </div>
+                </div>
+
+                <div class="aside-main">
+                    <div class="eyebrow">Uma primeira leitura</div>
+                    <h1 class="aside-title">Problema com banco ou dívida? <em>Vamos entender o que aconteceu.</em></h1>
+                    
+                    <div class="vcard">
+                        <div class="vcard-label">Como funciona</div>
+                        <div class="vcard-num">Atendimento <span>digital</span></div>
+                        <div class="vcard-det">Você responde algumas perguntas. Depois, a equipe avalia se pode ajudar com contratos, descontos indevidos ou golpes bancários.</div>
+                    </div>
+
+                </div>
+
+                <div class="aside-foot">
+                    <span>OAB/BA · Atuação conforme o Código de Ética da OAB</span>
+                </div>
+            </aside>
+
+            <!-- CARD PRINCIPAL DO QUIZ -->
+            <div class="card" id="quizContainer">
+                <!-- BARRA DE PROGRESSO -->
+                <div class="progress-wrap" id="progressWrap">
+                    <div class="progress-meta">
+                        <span id="stepLabel">Pergunta 1 de 4</span>
+                        <b id="pctLabel">25%</b>
+                    </div>
+                    <div class="track">
+                        <div class="bar" id="progressBar" style="width: 25%;"></div>
+                    </div>
+                </div>
+
+                <!-- CORPO DO QUIZ -->
+                <div class="body" id="quizBody">
+                    
+                    <!-- ETAPA 1: SELEÇÃO DA DOR / PROBLEMA -->
+                    <section class="quiz-step active" id="step1">
+                        <div class="eyebrow">Vamos começar</div>
+                        <h2 class="q-title">Qual situação descreve melhor o seu problema?</h2>
+                        <p class="q-help">Escolha uma opção para continuarmos.</p>
+
+                        <div class="opts">
+                            <button class="opt" onclick="handleOptionSelect(1, 'Empréstimo Indevido', 'consignado')">
+                                <div class="opt-ico">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                                </div>
+                                <div class="opt-txt">
+                                    <strong>Empréstimo ou desconto que eu NÃO fiz</strong>
+                                    <span>Descontos indevidos no INSS, contracheque ou conta bancária sem sua autorização.</span>
+                                </div>
+                                <span class="opt-arrow">→</span>
+                            </button>
+
+                            <button class="opt" onclick="handleOptionSelect(1, 'Golpe Bancário', 'golpe')">
+                                <div class="opt-ico">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                                </div>
+                                <div class="opt-txt">
+                                    <strong>Caí em um Golpe Bancário ou Fraude Pix</strong>
+                                    <span>Falso funcionário, Pix enganoso, boleto falso, conta ou aplicativo invadido.</span>
+                                </div>
+                                <span class="opt-arrow">→</span>
+                            </button>
+
+                            <button class="opt" onclick="handleOptionSelect(1, 'Juros Abusivos', 'juros')">
+                                <div class="opt-ico">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                                </div>
+                                <div class="opt-txt">
+                                    <strong>Contrato com Juros Abusivos ou Dívida Alta</strong>
+                                    <span>Empréstimo pessoal, financiamento ou cheque especial que virou uma bola de neve.</span>
+                                </div>
+                                <span class="opt-arrow">→</span>
+                            </button>
+
+                            <button class="opt" onclick="handleOptionSelect(1, 'Brasileiro no Exterior', 'exterior')">
+                                <div class="opt-ico">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                                </div>
+                                <div class="opt-txt">
+                                    <strong>Moro no Exterior e deixei dívidas no Brasil</strong>
+                                    <span>Dificuldade para remessa de valores, cobranças aos pais ou risco ao patrimônio no Brasil.</span>
+                                </div>
+                                <span class="opt-arrow">→</span>
+                            </button>
+
+                            <button class="opt warning" onclick="handleOptionSelect(1, 'Busca e Apreensão', 'busca_apreensao')">
+                                <div class="opt-ico alert">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                </div>
+                                <div class="opt-txt">
+                                    <strong>Veículo apreendido / Busca e Apreensão sem reserva</strong>
+                                    <span>Carro já apreendido pela justiça ou sem recurso financeiro para quitação.</span>
+                                </div>
+                                <span class="opt-arrow">→</span>
+                            </button>
+
+                            <button class="opt warning" onclick="handleOptionSelect(1, 'Superendividamento', 'superendividamento')">
+                                <div class="opt-ico alert">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                                </div>
+                                <div class="opt-txt">
+                                    <strong>Superendividamento geral (Quero renegociar tudo)</strong>
+                                    <span>Múltiplas dívidas acumuladas com renda comprometida acima da capacidade.</span>
+                                </div>
+                                <span class="opt-arrow">→</span>
+                            </button>
+                        </div>
+                    </section>
+
+                    <!-- ETAPA 2: DETALHAMENTO ESPECÍFICO DA DOR -->
+                    <section class="quiz-step" id="step2">
+                        <button class="back-btn" onclick="goToStep(1)">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                            Voltar
+                        </button>
+                        <div class="eyebrow">Agora, um detalhe</div>
+                        <h2 class="q-title" id="step2Title">Onde está ocorrendo essa cobrança ou problema?</h2>
+                        <p class="q-help" id="step2Help">Selecione o canal ou local do desconto para direcionarmos a fundamentação correta.</p>
+
+                        <div class="opts" id="step2Options">
+                            <!-- Opções dinâmicas preenchidas via JS conforme a dor selecionada na Etapa 1 -->
+                        </div>
+                    </section>
+
+                    <!-- ETAPA 3: FAIXA DE VALOR -->
+                    <section class="quiz-step" id="step3">
+                        <button class="back-btn" onclick="goToStep(2)">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                            Voltar
+                        </button>
+                        <div class="eyebrow">Por fim, o valor</div>
+                        <h2 class="q-title">Qual é o valor aproximado envolvido?</h2>
+                        <p class="q-help">Pode ser uma estimativa do prejuízo, das parcelas ou do saldo do contrato.</p>
+
+                        <div class="opts">
+                            <button class="opt" onclick="handleOptionSelect(3, 'Até R$ 2 mil', '<2k')">
+                                <div class="opt-ico">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                                </div>
+                                <div class="opt-txt">
+                                    <strong>Até R$ 2.000,00</strong>
+                                    <span>Valores de menor montante acumulado.</span>
+                                </div>
+                                <span class="opt-arrow">→</span>
+                            </button>
+
+                            <button class="opt" onclick="handleOptionSelect(3, 'R$ 2 mil a R$ 10 mil', '2-10k')">
+                                <div class="opt-ico">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                                </div>
+                                <div class="opt-txt">
+                                    <strong>Entre R$ 2.000,00 e R$ 10.000,00</strong>
+                                    <span>Prejuízo intermediário acumulado.</span>
+                                </div>
+                                <span class="opt-arrow">→</span>
+                            </button>
+
+                            <button class="opt" onclick="handleOptionSelect(3, 'R$ 10 mil a R$ 50 mil', '10-50k')">
+                                <div class="opt-ico highlight">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                </div>
+                                <div class="opt-txt">
+                                    <strong>Entre R$ 10.000,00 e R$ 50.000,00</strong>
+                                    <span>Valores expressivos ou contratos acumulados.</span>
+                                </div>
+                                <span class="opt-arrow">→</span>
+                            </button>
+
+                            <button class="opt" onclick="handleOptionSelect(3, 'Acima de R$ 50 mil', '>50k')">
+                                <div class="opt-ico highlight">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                </div>
+                                <div class="opt-txt">
+                                    <strong>Acima de R$ 50.000,00</strong>
+                                    <span>Fraudes de alto valor ou grande prejuízo financeiro.</span>
+                                </div>
+                                <span class="opt-arrow">→</span>
+                            </button>
+                        </div>
+                    </section>
+
+                    <!-- ANÁLISE FINAL -->
+                    <section class="quiz-step analysis-step" id="analysisStep" aria-live="polite" aria-busy="true">
+                    <div class="analysis-orb" aria-hidden="true"><span></span></div>
+                    <div class="eyebrow">Só mais um momento</div>
+                    <h2 class="q-title" id="analysisTitle">Analisando suas respostas</h2>
+                    <p class="q-help" id="analysisDetail">Estamos organizando as informações para preparar a orientação mais adequada.</p>
+                    <div class="analysis-status" aria-hidden="true">
+                        <span class="status-dot"></span>
+                        <span id="analysisStatus">Lendo suas respostas</span>
+                    </div>
+                    </section>
+
+                    <!-- ETAPA 4: FORMULÁRIO DE CAPTURA DE LEAD QUALIFICADO OU OPÇÃO DE LAUDO -->
+                    <section class="quiz-step success-step" id="step4">
+                        <div class="success-hero">
+                            <div class="result-badge success">Próximo passo</div>
+                            <h2 class="q-title">Boas notícias!<br>Seu caso tem <em>fundamento forte</em> para pedir a devolução e a suspensão dos descontos.</h2>
+                            <p class="q-help">A análise indica um caminho possível. Cada caso é único e será avaliado individualmente.</p>
+                        </div>
+                        <button class="back-btn" onclick="goToStep(3)">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                            Voltar
+                        </button>
+                        <div class="result-badge success">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                            Próximo passo
+                        </div>
+                        <h2 class="q-title">Podemos olhar os detalhes do seu caso.</h2>
+                        <p class="q-help">Deixe seus dados. A equipe responde pelo WhatsApp e orienta o próximo passo.</p>
+
+                        <div class="evidence-card">
+                            <div class="evidence-kicker">✦ Em casos semelhantes no TJSP*</div>
+                            <div class="evidence-number">79,0%</div>
+                            <p>das decisões foram favoráveis <strong>ao consumidor</strong><br><span>(n=3.703 decisões)</span></p>
+                            <div class="evidence-pill"><span></span>Cenário favorável</div>
+                            <div class="evidence-divider"></div>
+                            <div class="evidence-caption">O que pesou nessa leitura do Observatório Rosenbaum:</div>
+                            <ul class="evidence-list">
+                                <li>Empréstimo ou desconto feito sem sua autorização</li>
+                                <li>Desconto no benefício do INSS (verba alimentar)</li>
+                                <li>Reclamação já registrada e documento em mãos</li>
+                            </ul>
+                        </div>
+
+                        <div class="contact-intro">
+                            <div class="whatsapp-mark" aria-hidden="true">◔</div>
+                            <div><h3>Falta pouco — fale com um advogado agora</h3><p>Deixe seus dados. Um especialista entra em contato pelo WhatsApp em poucos minutos.</p></div>
+                        </div>
+
+                        <!-- BOX DE RESUMO DO CASO -->
+                        <div class="summary-card">
+                            <div class="summary-line">
+                                <span class="summary-label">Problema:</span>
+                                <span class="summary-val" id="sumProblema">-</span>
+                            </div>
+                            <div class="summary-line">
+                                <span class="summary-label">Detalhamento:</span>
+                                <span class="summary-val" id="sumDetalhe">-</span>
+                            </div>
+                            <div class="summary-line">
+                                <span class="summary-label">Valor Estimado:</span>
+                                <span class="summary-val" id="sumValor">-</span>
+                            </div>
+                        </div>
+
+                        <!-- OPÇÃO ESPECIAL PARA LAUDO TÉCNICO (Até R$ 150) CONFORME FORMULÁRIO DURA ANA -->
+                        <div class="laudo-option-box" id="laudoBox" style="display: none;">
+                            <div class="laudo-tag">Opção Rápida de Parecer</div>
+                            <h3>Revisão Técnica & Laudo Bancário</h3>
+                            <p>Para emissão prévia de Laudo Pericial de Revisão de Contrato (R$ 150,00), você pode optar por realizar a contratação direta do parecer técnico ou seguir para o WhatsApp.</p>
+                            <a href="https://pay.kiwify.com.br/placeholder" target="_blank" class="btn-laudo" id="laudoLink">
+                                📜 Adquirir Laudo Técnico por R$ 150,00
+                            </a>
+                            <div class="laudo-divider">ou fale direto no WhatsApp sem custo inicial</div>
+                        </div>
+
+                        <!-- FORMULÁRIO DE LEAD -->
+                        <form id="leadForm" onsubmit="handleLeadSubmit(event)">
+                            <div class="field">
+                                <label for="nome">Seu nome <b>*</b></label>
+                                <input type="text" id="nome" required placeholder="Digite seu nome completo">
+                            </div>
+
+                            <div class="field">
+                                <label for="whatsapp">WhatsApp <b>*</b> <span>— é por aqui que falamos com você</span></label>
+                                <input type="tel" id="whatsapp" required placeholder="(00) 00000-0000" maxlength="15" oninput="applyWhatsAppMask(this)">
+                            </div>
+
+                            <button type="submit" class="cta-btn" id="btnSubmit">
+                                <span>Falar com um advogado agora</span>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                            </button>
+                        </form>
+
+                        <div class="trust-footer">
+                            <span>🔒 Atendimento sigiloso · Lei Geral de Proteção de Dados (LGPD)</span>
+                        </div>
+                    </section>
+
+                    <!-- TELA DE NÃO QUALIFICADO (DESQUALIFICAÇÃO TRANSPARENTE E EDUCADORA) -->
+                    <section class="quiz-step" id="disqualifiedStep">
+                        <div class="disqualified-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        </div>
+                        <div class="result-badge calm">Orientação Transparente</div>
+                        <h2 class="q-title" id="disqTitle">Orientação sobre a sua situação</h2>
+                        <p class="q-help" id="disqLead">Com base nas opções selecionadas, o seu caso não se enquadra na nossa atuação de advocacia bancária privada neste momento.</p>
+
+                        <div class="disq-box" id="disqContent">
+                            <!-- Preenchido via JS conforme o motivo (Superendividamento, Busca & Apreensão, RMC exclusivo, etc) -->
+                        </div>
+
+                        <button class="btn-restart" onclick="restartQuiz()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                            Refazer Avaliação
+                        </button>
+                    </section>
+
+                </div>
+
+                <!-- FOOTER FIXO DO QUIZ -->
+                <div class="foot">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    Dra. Ana Maria Magalhães Sociedade Individual de Advocacia · CNPJ: 68.297.341/0001-04
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

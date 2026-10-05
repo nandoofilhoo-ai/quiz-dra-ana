@@ -1,0 +1,208 @@
+{
+  "name": "Quiz Bancário - Dra. Ana Maria Magalhães (Analytics & PipeZ)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "quiz-events",
+        "responseMode": "onReceived",
+        "responseData": "allEntries",
+        "options": {}
+      },
+      "id": "node-webhook-001",
+      "name": "Webhook Único (Quiz Dra. Ana)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        250,
+        300
+      ],
+      "webhookId": "quiz-events-webhook-id"
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.body.event_type }}",
+        "rules": {
+          "rules": [
+            {
+              "value2": "analytics",
+              "outputKey": "analytics"
+            },
+            {
+              "value2": "lead_submission",
+              "outputKey": "lead_submission"
+            }
+          ]
+        }
+      },
+      "id": "node-switch-002",
+      "name": "Switch (Tipo de Evento)",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [
+        500,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "ID_DA_PLANILHA_GOOGLE_SHEETS",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Analytics_Funil",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $json.body.timestamp }}",
+            "Session_ID": "={{ $json.body.sessionId }}",
+            "Etapa_Alcancada": "={{ $json.body.step }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "node-sheets-analytics-003",
+      "name": "Google Sheets - Analytics Funil",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        800,
+        180
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GOOGLE_SHEETS_CREDENTIAL_ID",
+          "name": "Google Sheets OAuth Credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "ID_DA_PLANILHA_GOOGLE_SHEETS",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Leads_Qualificados",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Data": "={{ $json.body.timestamp }}",
+            "Nome": "={{ $json.body.nome }}",
+            "WhatsApp": "={{ $json.body.whatsapp }}",
+            "Problema": "={{ $json.body.problema }}",
+            "Detalhe_Origem": "={{ $json.body.detalhe_origem }}",
+            "Faixa_Valor": "={{ $json.body.valor_divida }}",
+            "Session_ID": "={{ $json.body.sessionId }}",
+            "Status": "Novo Lead - Dra. Ana"
+          }
+        },
+        "options": {}
+      },
+      "id": "node-sheets-leads-004",
+      "name": "Google Sheets - Leads Qualificados",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        800,
+        380
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GOOGLE_SHEETS_CREDENTIAL_ID",
+          "name": "Google Sheets OAuth Credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $vars.PIPEZ_API_URL || 'https://api.pipez.crm/v1/leads' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $vars.PIPEZ_API_KEY || 'SEU_TOKEN_PIPEZ_AQUI' }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"name\": \"{{ $json.body.nome }}\",\n  \"phone\": \"{{ $json.body.whatsapp }}\",\n  \"destinationPhone\": \"5524992331416\",\n  \"advogada\": \"Dra. Ana Maria Magalhães\",\n  \"source\": \"Quiz Web Vercel\",\n  \"sessionId\": \"{{ $json.body.sessionId }}\",\n  \"customFields\": {\n    \"problema\": \"{{ $json.body.problema }}\",\n    \"detalhe_origem\": \"{{ $json.body.detalhe_origem }}\",\n    \"faixa_valor\": \"{{ $json.body.valor_divida }}\"\n  },\n  \"createdAt\": \"{{ $json.body.timestamp }}\"\n}",
+        "options": {}
+      },
+      "id": "node-pipez-crm-005",
+      "name": "HTTP Request - CRM PipeZ",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1050,
+        380
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Único (Quiz Dra. Ana)": {
+      "main": [
+        [
+          {
+            "node": "Switch (Tipo de Evento)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch (Tipo de Evento)": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets - Analytics Funil",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Google Sheets - Leads Qualificados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets - Leads Qualificados": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request - CRM PipeZ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {}
+}
