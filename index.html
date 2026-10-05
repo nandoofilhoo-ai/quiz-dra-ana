@@ -61,18 +61,22 @@
                     <!-- ETAPA 1: SELEÇÃO DA DOR / PROBLEMA -->
                     <section class="quiz-step active" id="step1">
                         <div class="eyebrow">Vamos começar</div>
+                        <div class="profile-switch" role="group" aria-label="Perfil do atendimento">
+                            <button type="button" class="profile-btn is-active" data-profile="empresa" onclick="setProfile('empresa', this)">Minha empresa</button>
+                            <button type="button" class="profile-btn" data-profile="pessoal" onclick="setProfile('pessoal', this)">Meu caso pessoal</button>
+                        </div>
                         <h2 class="q-title">Qual situação bancária descreve melhor a sua empresa?</h2>
                         <p class="q-help">Começamos pelo ponto mais urgente. Escolha uma opção para continuar.</p>
 
                         <div class="opts entry-options" id="entryOptions">
-                            <button class="opt" onclick="handleOptionSelect(1, 'Banco entrou na Justiça', 'processo')">
+                            <button class="opt" onclick="handleOptionSelect(1, 'Processo bancário', 'processo')">
                                 <div class="opt-ico"><span>01</span></div>
-                                <div class="opt-txt"><strong>Banco entrou na Justiça</strong><span>Recebi uma cobrança judicial, aviso de penhora ou outro documento do processo.</span></div>
+                                <div class="opt-txt"><strong>Processo bancário</strong><span>Recebi uma cobrança judicial, aviso de penhora ou outro documento do processo.</span></div>
                                 <span class="opt-arrow">→</span>
                             </button>
-                            <button class="opt" onclick="handleOptionSelect(1, 'Conta da empresa bloqueada', 'conta_bloqueada')">
+                            <button class="opt" onclick="handleOptionSelect(1, 'Conta bloqueada', 'conta_bloqueada')">
                                 <div class="opt-ico"><span>02</span></div>
-                                <div class="opt-txt"><strong>Conta da empresa bloqueada</strong><span>O dinheiro da empresa ficou bloqueado pelo banco ou pela Justiça.</span></div>
+                                <div class="opt-txt"><strong>Conta bloqueada</strong><span>O dinheiro da empresa ficou bloqueado pelo banco ou pela Justiça.</span></div>
                                 <span class="opt-arrow">→</span>
                             </button>
                             <button class="opt" onclick="handleOptionSelect(1, 'Recebíveis retidos', 'recebiveis')">
@@ -95,9 +99,9 @@
                                 <div class="opt-txt"><strong>Imóvel em atraso</strong><span>As parcelas do financiamento do imóvel estão atrasadas ou sob cobrança.</span></div>
                                 <span class="opt-arrow">→</span>
                             </button>
-                            <button class="opt" onclick="handleOptionSelect(1, 'Golpe da falsa central', 'golpe_central')">
+                            <button class="opt" onclick="handleOptionSelect(1, 'Falsa central', 'golpe_central')">
                                 <div class="opt-ico"><span>07</span></div>
-                                <div class="opt-txt"><strong>Golpe da falsa central</strong><span>Uma ligação se passou pelo banco e causou uma operação ou prejuízo.</span></div>
+                                <div class="opt-txt"><strong>Falsa central</strong><span>Uma ligação se passou pelo banco e causou uma operação ou prejuízo.</span></div>
                                 <span class="opt-arrow">→</span>
                             </button>
                             <button class="opt" onclick="handleOptionSelect(1, 'Dívidas no exterior', 'exterior')">
@@ -105,9 +109,14 @@
                                 <div class="opt-txt"><strong>Dívidas no exterior</strong><span>Preciso movimentar dinheiro ou proteger patrimônio ligado ao Brasil.</span></div>
                                 <span class="opt-arrow">→</span>
                             </button>
-                            <button class="opt" onclick="handleOptionSelect(1, 'Meu caso é outro', 'outro')">
+                            <button class="opt" onclick="handleOptionSelect(1, 'Servidor público', 'servidor')">
                                 <div class="opt-ico"><span>09</span></div>
-                                <div class="opt-txt"><strong>Meu caso é outro</strong><span>Tenho outro assunto bancário e quero explicar o que está acontecendo.</span></div>
+                                <div class="opt-txt"><strong>Servidor público</strong><span>Renovo empréstimos há anos e a dívida não diminui.</span></div>
+                                <span class="opt-arrow">→</span>
+                            </button>
+                            <button class="opt" onclick="handleOptionSelect(1, 'Outro caso bancário', 'outro')">
+                                <div class="opt-ico"><span>10</span></div>
+                                <div class="opt-txt"><strong>Outro caso bancário</strong><span>Tenho outro assunto bancário e quero explicar o que está acontecendo.</span></div>
                                 <span class="opt-arrow">→</span>
                             </button>
                         </div>
@@ -298,7 +307,7 @@
 
                         <div class="contact-intro">
                             <div class="whatsapp-mark" aria-hidden="true">◔</div>
-                            <div><h3>Falta pouco — fale com um advogado agora</h3><p>Deixe seus dados. Um especialista entra em contato pelo WhatsApp em poucos minutos.</p></div>
+                                <div><h3>Falta pouco — fale com um advogado agora</h3><p id="documentsHint">Deixe seus dados. Um especialista entra em contato pelo WhatsApp em poucos minutos.</p></div>
                         </div>
 
                         <!-- BOX DE RESUMO DO CASO -->
@@ -317,15 +326,15 @@
                             </div>
                         </div>
 
-                        <!-- OPÇÃO ESPECIAL PARA LAUDO TÉCNICO (Até R$ 150) CONFORME FORMULÁRIO DURA ANA -->
+                        <!-- OPÇÃO DE LAUDO TÉCNICO: valor confirmado pelo atendimento -->
                         <div class="laudo-option-box" id="laudoBox" style="display: none;">
-                            <div class="laudo-tag">Opção Rápida de Parecer</div>
-                            <h3>Revisão Técnica & Laudo Bancário</h3>
-                            <p>Para emissão prévia de Laudo Pericial de Revisão de Contrato (R$ 150,00), você pode optar por realizar a contratação direta do parecer técnico ou seguir para o WhatsApp.</p>
-                            <a href="https://pay.kiwify.com.br/placeholder" target="_blank" class="btn-laudo" id="laudoLink">
-                                📜 Adquirir Laudo Técnico por R$ 150,00
+                            <div class="laudo-tag">Opção de análise técnica</div>
+                            <h3>Revisão técnica do contrato</h3>
+                            <p>A equipe explica como funciona o laudo, o valor e o que será entregue antes de qualquer contratação.</p>
+                            <a href="#leadForm" class="btn-laudo" id="laudoLink">
+                                Quero receber os detalhes
                             </a>
-                            <div class="laudo-divider">ou fale direto no WhatsApp sem custo inicial</div>
+                            <div class="laudo-divider">A contratação só acontece depois da sua confirmação.</div>
                         </div>
 
                         <!-- FORMULÁRIO DE LEAD -->
@@ -339,6 +348,23 @@
                                 <label for="whatsapp">WhatsApp <b>*</b> <span>— é por aqui que falamos com você</span></label>
                                 <input type="tel" id="whatsapp" required placeholder="(00) 00000-0000" maxlength="15" oninput="applyWhatsAppMask(this)">
                             </div>
+
+                            <div class="field contact-grid">
+                                <div><label for="cidade">Cidade <b>*</b></label><input type="text" id="cidade" required placeholder="Sua cidade"></div>
+                                <div><label for="estado">Estado <b>*</b></label><input type="text" id="estado" required placeholder="UF" maxlength="2"></div>
+                            </div>
+
+                            <div class="field">
+                                <label for="horario">Melhor horário para falarmos <b>*</b></label>
+                                <select id="horario" required>
+                                    <option value="">Selecione</option>
+                                    <option>Manhã</option>
+                                    <option>Tarde</option>
+                                    <option>Noite</option>
+                                </select>
+                            </div>
+
+                            <label class="consent-field"><input type="checkbox" id="consentimento" required><span>Autorizo o contato por WhatsApp ou telefone. Meus dados serão tratados com sigilo, conforme a LGPD.</span></label>
 
                             <button type="submit" class="cta-btn" id="btnSubmit">
                                 <span>Falar com um advogado agora</span>

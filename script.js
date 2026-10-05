@@ -13,6 +13,7 @@ const state = {
     currentStep: 1,
     dorPrincipal: null,
     dorTipoCode: null,
+    perfil: 'empresa',
     detalheOrigem: null,
     faixaValor: null,
     isQualificado: true,
@@ -21,6 +22,16 @@ const state = {
     analysisTimer: null,
     analysisStatusTimer: null
 };
+
+function resolveOutcome(valueCode) {
+    const answers = (state.branchAnswers || []).join(' | ');
+    if (/^Tenho$/i.test(answers) || /já tem advogado nesse processo/i.test(answers)) return 'ja_tem_advogado';
+    if (/outra origem/i.test(answers)) return 'fora_do_bancario';
+    if (/devolveu tudo/i.test(answers)) return 'prejuizo_devolvido';
+    if (/Até R\$ 30 mil/i.test(answers)) return 'golpe_baixo_valor';
+    if (state.dorTipoCode !== 'servidor' && (valueCode === 'under_50k' || valueCode === '50_100k')) return 'laudo_offer';
+    return 'qualified';
+}
 
 // Auto Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -119,7 +130,7 @@ function handleOptionSelect(step, label, code) {
         document.getElementById('sumDetalhe').textContent = state.detalheOrigem;
         document.getElementById('sumValor').textContent = state.faixaValor;
 
-        // Exibir opção do Laudo R$ 150 caso o valor seja intermediário/revisional
+        // A oferta de laudo é definida pelo fluxo revisado abaixo.
         const laudoBox = document.getElementById('laudoBox');
         if (state.dorTipoCode === 'juros' && code === '<2k') {
             if (laudoBox) laudoBox.style.display = 'block';
@@ -129,6 +140,214 @@ function handleOptionSelect(step, label, code) {
 
         showAnalysisScreen('qualified');
     }
+}
+
+function setProfile(profile, button) {
+    state.perfil = profile;
+    document.querySelectorAll('.profile-btn').forEach(item => item.classList.remove('is-active'));
+    if (button) button.classList.add('is-active');
+    const personalIndexes = new Set([5, 6, 7, 8, 9]);
+    document.querySelectorAll('#entryOptions > .opt').forEach((item, index) => {
+        item.hidden = profile === 'pessoal' && !personalIndexes.has(index);
+        item.style.display = profile === 'pessoal' && !personalIndexes.has(index) ? 'none' : '';
+    });
+    const title = document.querySelector('#step1 .q-title');
+    if (title) title.textContent = profile === 'empresa'
+        ? 'Qual situação bancária descreve melhor a sua empresa?'
+        : 'Qual situação bancária descreve melhor o seu caso?';
+}
+
+function renderBusinessQuestion() {
+    const questions = BUSINESS_BRANCH_QUESTIONS[state.dorTipoCode] || BUSINESS_BRANCH_QUESTIONS.outro;
+    const index = state.branchQuestionIndex || 0;
+    const current = questions[index];
+    const title = document.getElementById('step2Title');
+    const help = document.getElementById('step2Help');
+    const container = document.getElementById('step2Options');
+    if (!current || !container) return;
+    title.textContent = current[0];
+    help.textContent = `Pergunta ${index + 1} de ${questions.length}. Escolha a opção mais próxima.`;
+    if (state.dorTipoCode === 'outro' && index === 2) {
+        container.innerHTML = '<div class="free-response"><textarea id="freeCase" maxlength="600" placeholder="Escreva brevemente o que aconteceu."></textarea><button class="free-submit" type="button" onclick="submitFreeCase()">Continuar</button></div>';
+        return;
+    }
+    container.innerHTML = current[1].map((label, optionIndex) => {
+        const displayLabel = compactButtonLabel(label);
+        return `
+        <button class="opt" onclick="handleOptionSelect(2, '${label.replace(/'/g, "\\'")}', 'answer_${index}_${optionIndex}')">
+            <div class="opt-ico"><span>${String(optionIndex + 1).padStart(2, '0')}</span></div>
+            <div class="opt-txt"><strong>${displayLabel}</strong><span>Toque para continuar com a triagem.</span></div>
+            <span class="opt-arrow">→</span>
+        </button>`;
+    }).join('');
+}
+
+function compactButtonLabel(label) {
+    const labels = {
+        'Cobrança para pagar em poucos dias': 'Cobrança urgente',
+        'Aviso de penhora ou bloqueio': 'Penhora ou bloqueio',
+        'Outro documento do processo': 'Outro documento',
+        'Há menos de 15 dias': 'Menos de 15 dias',
+        'Há mais de 15 dias': 'Mais de 15 dias',
+        'A Justiça, por causa de um processo': 'Bloqueio judicial',
+        'Aplicação ou saldo travado': 'Saldo travado',
+        'Cheque especial ou conta garantida': 'Cheque especial',
+        'Já renegociei e não consigo pagar': 'Renegociei e não pago',
+        'Recebi uma notificação': 'Recebi notificação',
+        'Passei dados ou instalei aplicativo': 'Passei dados ou app',
+        'O banco negou a contestação': 'Banco negou',
+        'Preciso enviar dinheiro para a família': 'Enviar à família',
+        'Quero comprar ou proteger patrimônio no Brasil': 'Patrimônio no Brasil',
+        'Outro assunto com banco': 'Outro assunto bancário'
+    };
+    return labels[label] || label;
+}
+
+function submitFreeCase() {
+    const field = document.getElementById('freeCase');
+    const value = field ? field.value.trim() : '';
+    if (!value) {
+        if (field) field.focus();
+        return;
+    }
+    state.branchAnswers.push(value);
+    state.detalheOrigem = value;
+    setupValueOptions();
+    goToStep(3);
+}
+
+function isUrgentAnswer(label) {
+    return /hoje|ontem|menos de 15 dias|nesta semana|mais de 60%|praticamente tudo|judicialmente/i.test(label || '');
+}
+
+function handleOptionSelect(step, label, code) {
+    if (step === 1) {
+        state.dorPrincipal = label;
+        state.dorTipoCode = code;
+        state.branchQuestionIndex = 0;
+        state.branchAnswers = [];
+        renderBusinessQuestion();
+        goToStep(2);
+        return;
+    }
+    if (step === 2) {
+        state.branchAnswers.push(label);
+        state.detalheOrigem = label;
+        state.urgente = Boolean(state.urgente || isUrgentAnswer(label));
+        if (state.dorTipoCode === 'golpe_central' && /até R\$ 30 mil/i.test(label)) state.golpeBaixoValor = true;
+        if (state.dorTipoCode === 'golpe_central' && /devolveu tudo/i.test(label)) state.bancoDevolveuTudo = true;
+        if (state.dorTipoCode === 'processo' && /^Tenho$/i.test(label)) state.jaTemAdvogado = true;
+        if (state.dorTipoCode === 'conta_bloqueada' && /outra origem/i.test(label)) state.foraDoBancario = true;
+        const questions = BUSINESS_BRANCH_QUESTIONS[state.dorTipoCode] || BUSINESS_BRANCH_QUESTIONS.outro;
+        state.branchQuestionIndex = (state.branchQuestionIndex || 0) + 1;
+        if (state.branchQuestionIndex < questions.length) {
+            renderBusinessQuestion();
+            sendAutoHeight();
+            return;
+        }
+        setupValueOptions();
+        goToStep(3);
+        return;
+    }
+    if (step === 3) {
+        state.faixaValor = label;
+        const sumProblema = document.getElementById('sumProblema');
+        const sumDetalhe = document.getElementById('sumDetalhe');
+        const sumValor = document.getElementById('sumValor');
+        if (sumProblema) sumProblema.textContent = state.dorPrincipal;
+        if (sumDetalhe) sumDetalhe.textContent = state.branchAnswers.join(' · ');
+        if (sumValor) sumValor.textContent = state.faixaValor;
+        let outcome = 'qualified';
+        if (state.jaTemAdvogado) outcome = 'ja_tem_advogado';
+        else if (state.foraDoBancario) outcome = 'fora_do_bancario';
+        else if (state.bancoDevolveuTudo) outcome = 'prejuizo_devolvido';
+        else if (state.golpeBaixoValor) outcome = 'golpe_baixo_valor';
+        else if (code === 'under_50k' || code === '50_100k') outcome = 'laudo_offer';
+        showAnalysisScreen(outcome);
+    }
+}
+
+function showDisqualificationScreen(reasonCode) {
+    state.isQualificado = false;
+    state.motivoDesqualificacao = reasonCode;
+    const progressWrap = document.getElementById('progressWrap');
+    if (progressWrap) progressWrap.style.display = 'none';
+    const disqStep = document.getElementById('disqualifiedStep');
+    const disqTitle = document.getElementById('disqTitle');
+    const disqLead = document.getElementById('disqLead');
+    const disqContent = document.getElementById('disqContent');
+    const messages = {
+        laudo_offer: ['Uma análise técnica pode ser o melhor primeiro passo', 'Pelo valor informado, o atendimento começa com uma análise do contrato antes de uma ação judicial.', '<p>O laudo mostra possíveis cobranças indevidas e pode servir de base para negociar com o banco.</p><button class="btn-restart" type="button" onclick="acceptLaudo()">Quero saber como funciona</button>'],
+        golpe_baixo_valor: ['O prejuízo informado está abaixo da faixa de atendimento', 'Para manter o foco em casos de maior complexidade, não seguimos com atendimento jurídico nessa faixa.', '<p>Registre a ocorrência, conteste a operação no banco e procure o consumidor.gov.br ou o Procon.</p>'],
+        prejuizo_devolvido: ['O banco já devolveu o valor informado', 'Nesse cenário, não há prejuízo a recuperar neste momento.', '<p>Se perceber que faltou alguma parte, refaça a triagem com os dados atualizados.</p>'],
+        ja_tem_advogado: ['Você já tem advogado no processo', 'O caminho mais seguro é conversar com o profissional que já acompanha os prazos e documentos.', '<p>Se precisar de uma segunda opinião, leve todos os documentos ao atendimento.</p>'],
+        fora_do_bancario: ['A origem do bloqueio parece estar fora do bancário', 'O fluxo identificou uma possível origem trabalhista, fiscal ou diferente de uma dívida bancária.', '<p>A equipe pode avaliar o contexto, mas esse caso não entra na prioridade bancária automática.</p>']
+    };
+    const message = messages[reasonCode] || ['Vamos revisar sua situação', 'A equipe precisa entender melhor os documentos antes de indicar o próximo passo.', '<p>Separe contratos, extratos, notificações e comprovantes relacionados ao caso.</p>'];
+    disqTitle.textContent = message[0];
+    disqLead.textContent = message[1];
+    disqContent.innerHTML = message[2];
+    if (disqStep) transitionToStep(disqStep);
+    sendAnalyticsEvent('disqualified_' + reasonCode);
+    sendAutoHeight();
+}
+
+function acceptLaudo() {
+    const laudoBox = document.getElementById('laudoBox');
+    const successTitle = document.getElementById('successTitle');
+    const successLead = document.getElementById('successLead');
+    if (laudoBox) laudoBox.style.display = 'block';
+    if (successTitle) successTitle.innerHTML = 'Análise técnica do seu contrato.';
+    if (successLead) successLead.textContent = 'Deixe seus dados para receber as informações sobre o laudo e os próximos passos.';
+    const progressWrap = document.getElementById('progressWrap');
+    if (progressWrap) progressWrap.style.display = 'block';
+    goToStep(4);
+}
+
+async function handleLeadSubmit(event) {
+    event.preventDefault();
+    const btnSubmit = document.getElementById('btnSubmit');
+    const nome = document.getElementById('nome').value.trim();
+    const rawWhatsapp = document.getElementById('whatsapp').value.replace(/\D/g, '');
+    const cidade = document.getElementById('cidade').value.trim();
+    const estado = document.getElementById('estado').value.trim().toUpperCase();
+    const horario = document.getElementById('horario').value;
+    if (!nome || rawWhatsapp.length < 10 || !cidade || estado.length !== 2 || !horario || !document.getElementById('consentimento').checked) return;
+    const formattedWhatsapp = rawWhatsapp.startsWith('55') ? rawWhatsapp : '55' + rawWhatsapp;
+    btnSubmit.disabled = true;
+    btnSubmit.querySelector('span').textContent = 'Encaminhando seus dados...';
+    const payload = {
+        event_type: 'lead_submission', sessionId: state.sessionId, nome, whatsapp: formattedWhatsapp,
+        perfil: state.perfil || 'empresa', ramo: state.dorTipoCode, problema: state.dorPrincipal,
+        respostas: state.branchAnswers || [], detalhe_origem: state.detalheOrigem, valor_divida: state.faixaValor,
+        urgente: Boolean(state.urgente), cidade, estado, melhor_horario: horario,
+        consentimento_lgpd: true, timestamp: new Date().toISOString()
+    };
+    try { await fetch(N8N_WEBHOOK_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); } catch (error) { console.warn('Erro ao enviar lead para o n8n:', error); }
+    const textMsg = encodeURIComponent(`Olá, Dra. Ana Maria Magalhães! Realizei a triagem bancária.\n\nNome: ${nome}\nPerfil: ${payload.perfil}\nRamo: ${state.dorPrincipal}\nRespostas: ${payload.respostas.join(' | ')}\nValor: ${state.faixaValor}\nUrgente: ${payload.urgente ? 'Sim' : 'Não'}\nCidade/UF: ${cidade}/${estado}\nMelhor horário: ${horario}`);
+    const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${textMsg}`;
+    try { window.top.location.href = waUrl; } catch (e) { window.location.href = waUrl; }
+}
+
+// Última camada de renderização: inclui resposta livre no ramo "outro".
+function renderBusinessQuestion() {
+    const questions = BUSINESS_BRANCH_QUESTIONS[state.dorTipoCode] || BUSINESS_BRANCH_QUESTIONS.outro;
+    const index = state.branchQuestionIndex || 0;
+    const current = questions[index];
+    const title = document.getElementById('step2Title');
+    const help = document.getElementById('step2Help');
+    const container = document.getElementById('step2Options');
+    if (!current || !container) return;
+    title.textContent = current[0];
+    help.textContent = `Pergunta ${index + 1} de ${questions.length}. Escolha a opção mais próxima.`;
+    if (state.dorTipoCode === 'outro' && index === 2) {
+        container.innerHTML = '<div class="free-response"><textarea id="freeCase" maxlength="600" placeholder="Escreva brevemente o que aconteceu."></textarea><button class="free-submit" type="button" onclick="submitFreeCase()">Continuar</button></div>';
+        return;
+    }
+    container.innerHTML = current[1].map((label, optionIndex) => {
+        const displayLabel = compactButtonLabel(label);
+        return `<button class="opt" onclick="handleOptionSelect(2, '${label.replace(/'/g, "\\'")}', 'answer_${index}_${optionIndex}')"><div class="opt-ico"><span>${String(optionIndex + 1).padStart(2, '0')}</span></div><div class="opt-txt"><strong>${displayLabel}</strong><span>Toque para continuar com a triagem.</span></div><span class="opt-arrow">→</span></button>`;
+    }).join('');
 }
 
 // Monta dinamicamente as opções da Etapa 2
@@ -311,12 +530,27 @@ function showAnalysisScreen(outcome) {
             avalista: ['Podemos analisar sua responsabilidade no contrato.', 'O que foi assinado e a relação com a empresa definem os pontos da avaliação.'],
             imovel: ['Podemos analisar a situação do financiamento do imóvel.', 'As notificações, parcelas e prazos indicam o caminho adequado para a análise.'],
             golpe_central: ['Podemos analisar o golpe da falsa central.', 'A operação realizada e a resposta do banco serão importantes para a avaliação.'],
+            servidor: ['Podemos analisar a sequência de empréstimos e descontos.', 'No caso de servidor, a análise considera as renovações sucessivas e os contratos assinados.'],
             exterior: ['Podemos analisar a situação bancária ligada ao Brasil.', 'A relação entre remessa, dívida e patrimônio será entendida individualmente.'],
             outro: ['Vamos encaminhar seu caso para análise.', 'As informações que você deixou ajudam a equipe a entender o próximo passo.']
         };
         const message = messages[state.dorTipoCode] || messages.outro;
         if (successTitle) successTitle.innerHTML = message[0];
         if (successLead) successLead.textContent = message[1];
+        const documents = {
+            processo: 'Separe o documento recebido pelo oficial e o contrato da dívida.',
+            conta_bloqueada: 'Separe o extrato mostrando o bloqueio e o número do processo, se houver.',
+            recebiveis: 'Separe o contrato da dívida e o extrato da maquininha ou conta vinculada.',
+            empresa_endividada: 'Separe os contratos das dívidas e os extratos dos últimos 3 meses.',
+            avalista: 'Separe o contrato assinado e o contrato social da empresa.',
+            imovel: 'Separe o contrato do financiamento e qualquer notificação recebida.',
+            golpe_central: 'Separe o boletim de ocorrência, comprovantes e a resposta do banco.',
+            servidor: 'Separe o contracheque mais recente e a lista das dívidas ou contratos.',
+            exterior: 'Separe documentos da dívida, da remessa ou do patrimônio ligado ao Brasil.',
+            outro: 'Separe contratos, extratos, notificações e comprovantes relacionados ao caso.'
+        };
+        const documentsHint = document.getElementById('documentsHint');
+        if (documentsHint) documentsHint.textContent = documents[state.dorTipoCode] || documents.outro;
     }
 
     transitionToStep(analysisStep);
@@ -400,6 +634,14 @@ function restartQuiz() {
     state.detalheOrigem = null;
     state.faixaValor = null;
     state.isQualificado = true;
+    state.perfil = 'empresa';
+    state.branchAnswers = [];
+    state.branchQuestionIndex = 0;
+    state.urgente = false;
+    state.golpeBaixoValor = false;
+    state.bancoDevolveuTudo = false;
+    state.jaTemAdvogado = false;
+    state.foraDoBancario = false;
     clearTimeout(state.analysisTimer);
     clearInterval(state.analysisStatusTimer);
     clearTimeout(state.transitionTimer);
@@ -560,8 +802,28 @@ function handleOptionSelect(step, label, code) {
         if (sumProblema) sumProblema.textContent = state.dorPrincipal;
         if (sumDetalhe) sumDetalhe.textContent = state.detalheOrigem;
         if (sumValor) sumValor.textContent = state.faixaValor;
-        showAnalysisScreen(code === 'under_50k' ? 'below_minimum' : 'qualified');
+        showAnalysisScreen(resolveOutcome(code));
     }
+}
+
+function renderBusinessQuestion() {
+    const questions = BUSINESS_BRANCH_QUESTIONS[state.dorTipoCode] || BUSINESS_BRANCH_QUESTIONS.outro;
+    const index = state.branchQuestionIndex || 0;
+    const current = questions[index];
+    const title = document.getElementById('step2Title');
+    const help = document.getElementById('step2Help');
+    const container = document.getElementById('step2Options');
+    if (!current || !container) return;
+    title.textContent = current[0];
+    help.textContent = `Pergunta ${index + 1} de ${questions.length}. Escolha a opção mais próxima.`;
+    if (state.dorTipoCode === 'outro' && index === 2) {
+        container.innerHTML = '<div class="free-response"><textarea id="freeCase" maxlength="600" placeholder="Escreva brevemente o que aconteceu."></textarea><button class="free-submit" type="button" onclick="submitFreeCase()">Continuar</button></div>';
+        return;
+    }
+    container.innerHTML = current[1].map((label, optionIndex) => {
+        const displayLabel = compactButtonLabel(label);
+        return `<button class="opt" onclick="handleOptionSelect(2, '${label.replace(/'/g, "\\'")}', 'answer_${index}_${optionIndex}')"><div class="opt-ico"><span>${String(optionIndex + 1).padStart(2, '0')}</span></div><div class="opt-txt"><strong>${displayLabel}</strong><span>Toque para continuar com a triagem.</span></div><span class="opt-arrow">→</span></button>`;
+    }).join('');
 }
 
 function showDisqualificationScreen(reasonCode) {
@@ -573,15 +835,18 @@ function showDisqualificationScreen(reasonCode) {
     const disqTitle = document.getElementById('disqTitle');
     const disqLead = document.getElementById('disqLead');
     const disqContent = document.getElementById('disqContent');
-    if (reasonCode === 'below_minimum') {
-        disqTitle.textContent = 'O valor informado está abaixo da nossa faixa de atuação';
-        disqLead.textContent = 'Para manter o atendimento focado em casos empresariais de maior complexidade, não seguimos com ação judicial nessa faixa.';
-        disqContent.innerHTML = '<p><strong>Uma alternativa possível:</strong></p><p>Você pode buscar uma solução pelo consumidor.gov.br, Procon ou ouvidoria do banco. Se o valor ou a situação mudar, refaça a triagem.</p>';
-    } else {
-        disqTitle.textContent = 'Vamos encaminhar sua situação para uma análise adequada';
-        disqLead.textContent = 'Esse caminho não gera uma dispensa automática. A equipe precisa entender os documentos antes de indicar o próximo passo.';
-        disqContent.innerHTML = '<p>Separe contratos, extratos, notificações e comprovantes relacionados ao caso.</p>';
-    }
+    const messages = {
+        laudo_offer: ['Uma análise técnica pode ser o melhor primeiro passo', 'Pelo valor informado, o atendimento começa com uma análise do contrato antes de uma ação judicial.', '<p>O laudo mostra possíveis cobranças indevidas e pode servir de base para negociar com o banco.</p><button class="btn-restart" type="button" onclick="acceptLaudo()">Quero saber como funciona</button>'],
+        below_minimum: ['O valor informado está abaixo da nossa faixa de atuação', 'Para manter o atendimento focado em casos empresariais de maior complexidade, não seguimos com ação judicial nessa faixa.', '<p>Você pode buscar uma solução pelo consumidor.gov.br, Procon ou ouvidoria do banco.</p>'],
+        golpe_baixo_valor: ['O prejuízo informado está abaixo da faixa de atendimento', 'Para manter o foco em casos de maior complexidade, não seguimos com atendimento jurídico nessa faixa.', '<p>Registre a ocorrência, conteste a operação no banco e procure o consumidor.gov.br ou o Procon.</p>'],
+        prejuizo_devolvido: ['O banco já devolveu o valor informado', 'Nesse cenário, não há prejuízo a recuperar neste momento.', '<p>Se perceber que faltou alguma parte, refaça a triagem com os dados atualizados.</p>'],
+        ja_tem_advogado: ['Você já tem advogado no processo', 'O caminho mais seguro é conversar com o profissional que já acompanha os prazos e documentos.', '<p>Se precisar de uma segunda opinião, leve todos os documentos ao atendimento.</p>'],
+        fora_do_bancario: ['A origem do bloqueio parece estar fora do bancário', 'O fluxo identificou uma possível origem trabalhista, fiscal ou diferente de uma dívida bancária.', '<p>A equipe pode avaliar o contexto, mas esse caso não entra na prioridade bancária automática.</p>']
+    };
+    const message = messages[reasonCode] || ['Vamos encaminhar sua situação para uma análise adequada', 'A equipe precisa entender os documentos antes de indicar o próximo passo.', '<p>Separe contratos, extratos, notificações e comprovantes relacionados ao caso.</p>'];
+    disqTitle.textContent = message[0];
+    disqLead.textContent = message[1];
+    disqContent.innerHTML = message[2];
     if (disqStep) transitionToStep(disqStep);
     sendAnalyticsEvent('disqualified_' + reasonCode);
     sendAutoHeight();
@@ -632,13 +897,20 @@ const BUSINESS_BRANCH_QUESTIONS = {
         ['Qual foi o prejuízo aproximado?', ['Até R$ 30 mil', 'R$ 30 a 100 mil', 'Acima de R$ 100 mil', 'Não sei']],
         ['O que o banco respondeu?', ['Negou a devolução', 'Ainda não respondeu', 'Devolveu uma parte', 'Devolveu tudo']]
     ],
+    servidor: [
+        ['Qual é a sua renda mensal aproximada?', ['Até R$ 10 mil', 'R$ 10 a 20 mil', 'R$ 20 a 40 mil', 'Acima de R$ 40 mil', 'Não sei']],
+        ['O que acontece com os empréstimos?', ['Renovo todo mês', 'Renovo há anos', 'A dívida só aumenta', 'Não sei']],
+        ['Onde os descontos aparecem?', ['Contracheque', 'Conta corrente', 'Os dois', 'Não sei']],
+        ['Você já tentou resolver com o banco?', ['Sim, sem solução', 'Ainda não', 'Não sei']]
+    ],
     exterior: [
         ['Qual é a situação ligada ao Brasil?', ['Preciso enviar dinheiro para a família', 'Quero comprar ou proteger patrimônio no Brasil', 'Uma conta ou valor foi bloqueado', 'Outro caso']],
         ['O problema envolve dívida bancária?', ['Sim, da empresa', 'Sim, pessoal', 'Não sei', 'Não']]
     ],
     outro: [
         ['O problema é com:', ['Dívida da empresa', 'Dívida pessoal', 'Outro assunto com banco']],
-        ['Existe processo, bloqueio ou prazo correndo?', ['Sim', 'Não', 'Não sei']]
+        ['Existe processo, bloqueio ou prazo correndo?', ['Sim', 'Não', 'Não sei']],
+        ['Conte em uma ou duas frases o que está acontecendo.', []]
     ]
 };
 
@@ -652,12 +924,14 @@ function renderBusinessQuestion() {
     if (!current || !container) return;
     title.textContent = current[0];
     help.textContent = `Pergunta ${index + 1} de ${questions.length}. Escolha a opção mais próxima.`;
-    container.innerHTML = current[1].map((label, optionIndex) => `
-        <button class="opt" onclick="handleOptionSelect(2, '${label.replace(/'/g, "\\'")}', 'answer_${index}_${optionIndex}')">
-            <div class="opt-ico"><span>${String(optionIndex + 1).padStart(2, '0')}</span></div>
-            <div class="opt-txt"><strong>${label}</strong><span>Toque para continuar com a triagem.</span></div>
-            <span class="opt-arrow">→</span>
-        </button>`).join('');
+    if (state.dorTipoCode === 'outro' && index === 2) {
+        container.innerHTML = '<div class="free-response"><textarea id="freeCase" maxlength="600" placeholder="Escreva brevemente o que aconteceu."></textarea><button class="free-submit" type="button" onclick="submitFreeCase()">Continuar</button></div>';
+        return;
+    }
+    container.innerHTML = current[1].map((label, optionIndex) => {
+        const displayLabel = compactButtonLabel(label);
+        return `<button class="opt" onclick="handleOptionSelect(2, '${label.replace(/'/g, "\\'")}', 'answer_${index}_${optionIndex}')"><div class="opt-ico"><span>${String(optionIndex + 1).padStart(2, '0')}</span></div><div class="opt-txt"><strong>${displayLabel}</strong><span>Toque para continuar com a triagem.</span></div><span class="opt-arrow">→</span></button>`;
+    }).join('');
 }
 
 function handleOptionSelect(step, label, code) {
@@ -692,6 +966,6 @@ function handleOptionSelect(step, label, code) {
         if (sumProblema) sumProblema.textContent = state.dorPrincipal;
         if (sumDetalhe) sumDetalhe.textContent = state.branchAnswers.join(' · ');
         if (sumValor) sumValor.textContent = state.faixaValor;
-        showAnalysisScreen(code === 'under_50k' ? 'below_minimum' : 'qualified');
+        showAnalysisScreen(resolveOutcome(code));
     }
 }
