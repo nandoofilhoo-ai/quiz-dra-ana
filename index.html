@@ -13,7 +13,7 @@
 <body>
     <main class="stage">
         <div class="shell">
-            <!-- ASIDE DE AVALIAÇÃO E CREDIBILIDADE (Estilo Rosenbaum Premium) -->
+            <!-- ASIDE DE AVALIAÇÃO E CREDIBILIDADE -->
             <aside class="aside">
                 <div class="brand brand-aside">
                     <div class="brand-crest">
@@ -27,12 +27,12 @@
 
                 <div class="aside-main">
                     <div class="eyebrow">Uma primeira leitura</div>
-                    <h1 class="aside-title">Problema com banco ou dívida? <em>Vamos entender o que aconteceu.</em></h1>
+                    <h1 class="aside-title">Sua empresa está com um problema bancário? <em>Vamos entender o que aconteceu.</em></h1>
                     
                     <div class="vcard">
                         <div class="vcard-label">Como funciona</div>
                         <div class="vcard-num">Atendimento <span>digital</span></div>
-                        <div class="vcard-det">Você responde algumas perguntas. Depois, a equipe avalia se pode ajudar com contratos, descontos indevidos ou golpes bancários.</div>
+                        <div class="vcard-det">Você responde algumas perguntas. Depois, um advogado avalia o contrato, o valor envolvido e o próximo passo.</div>
                     </div>
 
                 </div>
@@ -61,10 +61,57 @@
                     <!-- ETAPA 1: SELEÇÃO DA DOR / PROBLEMA -->
                     <section class="quiz-step active" id="step1">
                         <div class="eyebrow">Vamos começar</div>
-                        <h2 class="q-title">Qual situação descreve melhor o seu problema?</h2>
-                        <p class="q-help">Escolha uma opção para continuarmos.</p>
+                        <h2 class="q-title">Qual situação bancária descreve melhor a sua empresa?</h2>
+                        <p class="q-help">Começamos pelo ponto mais urgente. Escolha uma opção para continuar.</p>
 
-                        <div class="opts">
+                        <div class="opts entry-options" id="entryOptions">
+                            <button class="opt" onclick="handleOptionSelect(1, 'Banco entrou na Justiça', 'processo')">
+                                <div class="opt-ico"><span>01</span></div>
+                                <div class="opt-txt"><strong>Banco entrou na Justiça</strong><span>Recebi uma cobrança judicial, aviso de penhora ou outro documento do processo.</span></div>
+                                <span class="opt-arrow">→</span>
+                            </button>
+                            <button class="opt" onclick="handleOptionSelect(1, 'Conta da empresa bloqueada', 'conta_bloqueada')">
+                                <div class="opt-ico"><span>02</span></div>
+                                <div class="opt-txt"><strong>Conta da empresa bloqueada</strong><span>O dinheiro da empresa ficou bloqueado pelo banco ou pela Justiça.</span></div>
+                                <span class="opt-arrow">→</span>
+                            </button>
+                            <button class="opt" onclick="handleOptionSelect(1, 'Recebíveis retidos', 'recebiveis')">
+                                <div class="opt-ico"><span>03</span></div>
+                                <div class="opt-txt"><strong>Recebíveis retidos</strong><span>Vendas da maquininha, duplicatas ou valores da empresa estão retidos.</span></div>
+                                <span class="opt-arrow">→</span>
+                            </button>
+                            <button class="opt" onclick="handleOptionSelect(1, 'Empresa endividada', 'empresa_endividada')">
+                                <div class="opt-ico"><span>04</span></div>
+                                <div class="opt-txt"><strong>Empresa endividada</strong><span>Dívidas bancárias, capital de giro ou contratos estão pressionando o caixa.</span></div>
+                                <span class="opt-arrow">→</span>
+                            </button>
+                            <button class="opt" onclick="handleOptionSelect(1, 'Sócio ou avalista', 'avalista')">
+                                <div class="opt-ico"><span>05</span></div>
+                                <div class="opt-txt"><strong>Sócio ou avalista</strong><span>Assinei pela empresa e meu patrimônio pessoal está em risco.</span></div>
+                                <span class="opt-arrow">→</span>
+                            </button>
+                            <button class="opt" onclick="handleOptionSelect(1, 'Imóvel em atraso', 'imovel')">
+                                <div class="opt-ico"><span>06</span></div>
+                                <div class="opt-txt"><strong>Imóvel em atraso</strong><span>As parcelas do financiamento do imóvel estão atrasadas ou sob cobrança.</span></div>
+                                <span class="opt-arrow">→</span>
+                            </button>
+                            <button class="opt" onclick="handleOptionSelect(1, 'Golpe da falsa central', 'golpe_central')">
+                                <div class="opt-ico"><span>07</span></div>
+                                <div class="opt-txt"><strong>Golpe da falsa central</strong><span>Uma ligação se passou pelo banco e causou uma operação ou prejuízo.</span></div>
+                                <span class="opt-arrow">→</span>
+                            </button>
+                            <button class="opt" onclick="handleOptionSelect(1, 'Dívidas no exterior', 'exterior')">
+                                <div class="opt-ico"><span>08</span></div>
+                                <div class="opt-txt"><strong>Dívidas no exterior</strong><span>Preciso movimentar dinheiro ou proteger patrimônio ligado ao Brasil.</span></div>
+                                <span class="opt-arrow">→</span>
+                            </button>
+                            <button class="opt" onclick="handleOptionSelect(1, 'Meu caso é outro', 'outro')">
+                                <div class="opt-ico"><span>09</span></div>
+                                <div class="opt-txt"><strong>Meu caso é outro</strong><span>Tenho outro assunto bancário e quero explicar o que está acontecendo.</span></div>
+                                <span class="opt-arrow">→</span>
+                            </button>
+                        </div>
+                        <div class="opts legacy-entry-options" aria-hidden="true">
                             <button class="opt" onclick="handleOptionSelect(1, 'Empréstimo Indevido', 'consignado')">
                                 <div class="opt-ico">
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
@@ -158,7 +205,7 @@
                         <h2 class="q-title">Qual é o valor aproximado envolvido?</h2>
                         <p class="q-help">Pode ser uma estimativa do prejuízo, das parcelas ou do saldo do contrato.</p>
 
-                        <div class="opts">
+                        <div class="opts" id="valueOptions">
                             <button class="opt" onclick="handleOptionSelect(3, 'Até R$ 2 mil', '<2k')">
                                 <div class="opt-ico">
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
@@ -221,8 +268,8 @@
                     <section class="quiz-step success-step" id="step4">
                         <div class="success-hero">
                             <div class="result-badge success">Próximo passo</div>
-                            <h2 class="q-title">Boas notícias!<br>Seu caso tem <em>fundamento forte</em> para pedir a devolução e a suspensão dos descontos.</h2>
-                            <p class="q-help">A análise indica um caminho possível. Cada caso é único e será avaliado individualmente.</p>
+                            <h2 class="q-title" id="successTitle">Boas notícias!<br>Podemos analisar os detalhes do seu caso.</h2>
+                            <p class="q-help" id="successLead">A triagem indica um caminho possível. Cada caso é único e será avaliado individualmente.</p>
                         </div>
                         <button class="back-btn" onclick="goToStep(3)">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
@@ -236,16 +283,16 @@
                         <p class="q-help">Deixe seus dados. A equipe responde pelo WhatsApp e orienta o próximo passo.</p>
 
                         <div class="evidence-card">
-                            <div class="evidence-kicker">✦ Em casos semelhantes no TJSP*</div>
-                            <div class="evidence-number">79,0%</div>
-                            <p>das decisões foram favoráveis <strong>ao consumidor</strong><br><span>(n=3.703 decisões)</span></p>
-                            <div class="evidence-pill"><span></span>Cenário favorável</div>
+                            <div class="evidence-kicker">✦ O que acontece agora</div>
+                            <div class="evidence-number">3 pontos</div>
+                            <p>serão conferidos antes de qualquer orientação</p>
+                            <div class="evidence-pill"><span></span>Análise individual</div>
                             <div class="evidence-divider"></div>
-                            <div class="evidence-caption">O que pesou nessa leitura do Observatório Rosenbaum:</div>
+                            <div class="evidence-caption">O que a equipe vai conferir:</div>
                             <ul class="evidence-list">
-                                <li>Empréstimo ou desconto feito sem sua autorização</li>
-                                <li>Desconto no benefício do INSS (verba alimentar)</li>
-                                <li>Reclamação já registrada e documento em mãos</li>
+                                <li>Contrato, cobrança e documentos disponíveis</li>
+                                <li>Valor envolvido e impacto para a empresa</li>
+                                <li>Processo, bloqueio ou prazo em andamento</li>
                             </ul>
                         </div>
 

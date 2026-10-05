@@ -1,6 +1,6 @@
 /* ==========================================================================
    QUIZ BANCÁRIO PREMIUM — Dra. Ana Maria Magalhães
-   Design Inspirado no Modelo Rosenbaum (Off-White, Deep Navy, Rich Gold, Emerald)
+   Design editorial (Off-White, Deep Navy, Rich Gold, Emerald)
    ========================================================================== */
 
 :root {
@@ -55,7 +55,7 @@ body {
     position: relative;
 }
 
-/* Fita Dourada no Topo (Rosenbaum style) */
+/* Fita dourada no topo */
 .shell::before {
     content: "";
     position: absolute;
@@ -708,7 +708,7 @@ body {
     text-align: center;
 }
 
-/* MOBILE ADAPTATION (Rosenbaum style collapsible aside) */
+/* Adaptação mobile */
 @media (max-width: 860px) {
     body {
         padding: 0.5rem;
@@ -1034,6 +1034,28 @@ body {
         scroll-behavior: auto !important;
         transition-duration: 0.01ms !important;
     }
+}
+
+/* Entry screen now prioritizes business banking cases. */
+.legacy-entry-options {
+    display: none !important;
+}
+
+.entry-options .opt-ico span,
+#valueOptions .opt-ico span,
+#step2Options .opt-ico span {
+    color: var(--accent);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+}
+
+.entry-options .opt-txt strong {
+    color: var(--ink);
+}
+
+.entry-options {
+    gap: 0.7rem;
 }
 
 /* Success screen: editorial proof card + clear WhatsApp handoff. */
