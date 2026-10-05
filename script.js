@@ -588,3 +588,110 @@ function showDisqualificationScreen(reasonCode) {
 }
 
 document.addEventListener('DOMContentLoaded', setupValueOptions);
+
+/* Perguntas qualificadoras por ramo: até quatro aqui, mais a faixa de valor. */
+const BUSINESS_BRANCH_QUESTIONS = {
+    processo: [
+        ['O que você recebeu?', ['Cobrança para pagar em poucos dias', 'Aviso de penhora ou bloqueio', 'Aviso de leilão', 'Outro documento do processo', 'Não sei']],
+        ['Quando você recebeu?', ['Hoje ou ontem', 'Há menos de 15 dias', 'Há mais de 15 dias', 'Não lembro']],
+        ['Essa dívida é de quem?', ['Da minha empresa', 'Minha, pessoal', 'Sou avalista ou fiador']],
+        ['Você já tem advogado nesse processo?', ['Não tenho', 'Tenho, mas quero outra opinião', 'Tenho']]
+    ],
+    conta_bloqueada: [
+        ['Quem bloqueou a conta?', ['A Justiça, por causa de um processo', 'O próprio banco', 'Não sei']],
+        ['Quando foi o bloqueio?', ['Hoje ou ontem', 'Nesta semana', 'Há mais de uma semana']],
+        ['Quanto ficou bloqueado?', ['Até R$ 20 mil', 'R$ 20 a 100 mil', 'R$ 100 a 500 mil', 'Acima de R$ 500 mil', 'Não sei']],
+        ['Esse dinheiro era para quê?', ['Folha de pagamento', 'Fornecedores e impostos', 'Reserva da empresa', 'Outro']],
+        ['O bloqueio veio de uma dívida com banco?', ['Sim', 'Não, é de outra origem', 'Não sei']]
+    ],
+    recebiveis: [
+        ['O que o banco está segurando?', ['Vendas da maquininha', 'Duplicatas ou boletos', 'Aplicação ou saldo travado', 'Não sei']],
+        ['Isso está ligado a qual dívida?', ['Capital de giro', 'Antecipação de recebíveis', 'Cheque especial ou conta garantida', 'Não sei']],
+        ['Quanto do faturamento fica retido?', ['Menos de 30%', 'De 30% a 60%', 'Mais de 60%', 'Praticamente tudo']],
+        ['Como estão as parcelas dessa dívida?', ['Em dia', 'Atrasadas', 'Já renegociei e não consigo pagar']]
+    ],
+    empresa_endividada: [
+        ['Qual contrato mais pesa no caixa?', ['Capital de giro ou Pronampe', 'Cheque especial ou conta garantida', 'Cartão da empresa', 'Outro contrato']],
+        ['Como estão as parcelas?', ['Em dia', 'Atrasadas', 'Já renegociei e não consigo pagar']],
+        ['Existem garantias ou bens envolvidos?', ['Sim, dei um imóvel ou veículo', 'Sim, assinei como sócio ou avalista', 'Não sei', 'Não']],
+        ['O banco já fez alguma cobrança formal?', ['Sim, recebi uma notificação', 'Ainda não', 'Não sei']]
+    ],
+    avalista: [
+        ['Como você aparece nesse contrato?', ['Sócio que assinou pela empresa', 'Avalista ou fiador', 'Não sei']],
+        ['O banco já está cobrando você?', ['Sim, judicialmente', 'Sim, por cobrança direta', 'Ainda não', 'Não sei']],
+        ['A empresa ainda está funcionando?', ['Sim', 'Está paralisada', 'Foi encerrada', 'Não sei']]
+    ],
+    imovel: [
+        ['Em que ponto está o financiamento?', ['Parcelas atrasadas', 'Recebi uma notificação', 'Falaram em leilão', 'Não sei']],
+        ['Quando recebeu a notificação?', ['Hoje ou ontem', 'Há menos de 15 dias', 'Há mais de 15 dias', 'Não lembro']],
+        ['O imóvel está ligado à empresa?', ['Sim, é da empresa', 'Não, é pessoal', 'Não sei']]
+    ],
+    golpe_central: [
+        ['O que aconteceu depois da ligação?', ['Fiz um Pix ou transferência', 'Passei dados ou instalei aplicativo', 'O banco negou a contestação', 'Não sei']],
+        ['Quando aconteceu?', ['Hoje ou ontem', 'Nos últimos 15 dias', 'Há mais de 15 dias', 'Não lembro']],
+        ['Qual foi o prejuízo aproximado?', ['Até R$ 30 mil', 'R$ 30 a 100 mil', 'Acima de R$ 100 mil', 'Não sei']],
+        ['O que o banco respondeu?', ['Negou a devolução', 'Ainda não respondeu', 'Devolveu uma parte', 'Devolveu tudo']]
+    ],
+    exterior: [
+        ['Qual é a situação ligada ao Brasil?', ['Preciso enviar dinheiro para a família', 'Quero comprar ou proteger patrimônio no Brasil', 'Uma conta ou valor foi bloqueado', 'Outro caso']],
+        ['O problema envolve dívida bancária?', ['Sim, da empresa', 'Sim, pessoal', 'Não sei', 'Não']]
+    ],
+    outro: [
+        ['O problema é com:', ['Dívida da empresa', 'Dívida pessoal', 'Outro assunto com banco']],
+        ['Existe processo, bloqueio ou prazo correndo?', ['Sim', 'Não', 'Não sei']]
+    ]
+};
+
+function renderBusinessQuestion() {
+    const questions = BUSINESS_BRANCH_QUESTIONS[state.dorTipoCode] || BUSINESS_BRANCH_QUESTIONS.outro;
+    const index = state.branchQuestionIndex || 0;
+    const current = questions[index];
+    const title = document.getElementById('step2Title');
+    const help = document.getElementById('step2Help');
+    const container = document.getElementById('step2Options');
+    if (!current || !container) return;
+    title.textContent = current[0];
+    help.textContent = `Pergunta ${index + 1} de ${questions.length}. Escolha a opção mais próxima.`;
+    container.innerHTML = current[1].map((label, optionIndex) => `
+        <button class="opt" onclick="handleOptionSelect(2, '${label.replace(/'/g, "\\'")}', 'answer_${index}_${optionIndex}')">
+            <div class="opt-ico"><span>${String(optionIndex + 1).padStart(2, '0')}</span></div>
+            <div class="opt-txt"><strong>${label}</strong><span>Toque para continuar com a triagem.</span></div>
+            <span class="opt-arrow">→</span>
+        </button>`).join('');
+}
+
+function handleOptionSelect(step, label, code) {
+    if (step === 1) {
+        state.dorPrincipal = label;
+        state.dorTipoCode = code;
+        state.branchQuestionIndex = 0;
+        state.branchAnswers = [];
+        renderBusinessQuestion();
+        goToStep(2);
+        return;
+    }
+    if (step === 2) {
+        state.branchAnswers.push(label);
+        const questions = BUSINESS_BRANCH_QUESTIONS[state.dorTipoCode] || BUSINESS_BRANCH_QUESTIONS.outro;
+        state.detalheOrigem = label;
+        state.branchQuestionIndex = (state.branchQuestionIndex || 0) + 1;
+        if (state.branchQuestionIndex < questions.length) {
+            renderBusinessQuestion();
+            sendAutoHeight();
+            return;
+        }
+        setupValueOptions();
+        goToStep(3);
+        return;
+    }
+    if (step === 3) {
+        state.faixaValor = label;
+        const sumProblema = document.getElementById('sumProblema');
+        const sumDetalhe = document.getElementById('sumDetalhe');
+        const sumValor = document.getElementById('sumValor');
+        if (sumProblema) sumProblema.textContent = state.dorPrincipal;
+        if (sumDetalhe) sumDetalhe.textContent = state.branchAnswers.join(' · ');
+        if (sumValor) sumValor.textContent = state.faixaValor;
+        showAnalysisScreen(code === 'under_50k' ? 'below_minimum' : 'qualified');
+    }
+}
