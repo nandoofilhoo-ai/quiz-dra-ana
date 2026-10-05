@@ -33,6 +33,21 @@ function resolveOutcome(valueCode) {
     return 'qualified';
 }
 
+function branchNeedsValue() {
+    return ['processo', 'recebiveis', 'empresa_endividada', 'avalista', 'imovel'].includes(state.dorTipoCode);
+}
+
+function optionIcon(label) {
+    const text = String(label || '').toLowerCase();
+    if (/conta|saldo|bloqueio/.test(text)) return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h3"/></svg>';
+    if (/empresa|capital|dívida|contrato|cobrança|processo|documento/.test(text)) return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V6l8-3 8 3v14M2 20h20M8 10h1M15 10h1M8 14h1M15 14h1"/></svg>';
+    if (/imóvel|imovel|patrimônio|bem/.test(text)) return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m3 11 9-7 9 7M5 10v10h14V10M9 20v-5h6v5"/></svg>';
+    if (/golpe|pix|dados|banco|devol/.test(text)) return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2M8 3l-2 2M16 3l2 2"/></svg>';
+    if (/servidor|contracheque|desconto/.test(text)) return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h5"/></svg>';
+    if (/sócio|avalista|fiador|pessoal/.test(text)) return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3"/><path d="M5 20a7 7 0 0 1 14 0M18 5l3 3-3 3"/></svg>';
+    return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg>';
+}
+
 // Auto Initialize
 document.addEventListener('DOMContentLoaded', () => {
     sendAnalyticsEvent(1);
@@ -245,8 +260,13 @@ function handleOptionSelect(step, label, code) {
             sendAutoHeight();
             return;
         }
-        setupValueOptions();
-        goToStep(3);
+        if (branchNeedsValue()) {
+            setupValueOptions();
+            goToStep(3);
+        } else {
+            state.faixaValor = state.branchAnswers.find(answer => /R\$|mil|acima|não sei/i.test(answer)) || 'Não informado';
+            showAnalysisScreen(resolveOutcome('no_value'));
+        }
         return;
     }
     if (step === 3) {
@@ -346,7 +366,7 @@ function renderBusinessQuestion() {
     }
     container.innerHTML = current[1].map((label, optionIndex) => {
         const displayLabel = compactButtonLabel(label);
-        return `<button class="opt" onclick="handleOptionSelect(2, '${label.replace(/'/g, "\\'")}', 'answer_${index}_${optionIndex}')"><div class="opt-ico"><span>${String(optionIndex + 1).padStart(2, '0')}</span></div><div class="opt-txt"><strong>${displayLabel}</strong><span>Toque para continuar com a triagem.</span></div><span class="opt-arrow">→</span></button>`;
+        return `<button class="opt" onclick="handleOptionSelect(2, '${label.replace(/'/g, "\\'")}', 'answer_${index}_${optionIndex}')"><div class="opt-ico">${optionIcon(label)}</div><div class="opt-txt"><strong>${displayLabel}</strong><span>Toque para continuar com a triagem.</span></div><span class="opt-arrow">→</span></button>`;
     }).join('');
 }
 
@@ -762,6 +782,18 @@ function setupStep2Options(code) {
 }
 
 function setupValueOptions() {
+    const questionCopy = {
+        processo: ['Qual o valor que o banco está cobrando?', 'Pode ser uma estimativa do contrato ou da cobrança recebida.'],
+        recebiveis: ['Qual o valor total da dívida?', 'Considere o contrato ligado aos recebíveis retidos.'],
+        empresa_endividada: ['Qual o valor total das dívidas bancárias?', 'Some os contratos que pressionam o caixa, se souber.'],
+        avalista: ['Qual o valor da dívida da empresa?', 'Uma estimativa já ajuda a definir a análise.'],
+        imovel: ['Qual o saldo ou valor da dívida?', 'Considere o financiamento e as parcelas em atraso.']
+    };
+    const copy = questionCopy[state.dorTipoCode] || ['Qual é o valor aproximado envolvido?', 'Uma estimativa já ajuda a definir o próximo passo.'];
+    const valueTitle = document.querySelector('#step3 .q-title');
+    const valueHelp = document.querySelector('#step3 .q-help');
+    if (valueTitle) valueTitle.textContent = copy[0];
+    if (valueHelp) valueHelp.textContent = copy[1];
     const options = [
         ['Até R$ 50 mil', 'under_50k', 'Abaixo da régua de ação judicial.'],
         ['R$ 50 mil a R$ 100 mil', '50_100k', 'Faixa para avaliação e definição do próximo passo.'],
@@ -774,7 +806,7 @@ function setupValueOptions() {
     if (!container) return;
     container.innerHTML = options.map(([label, code, detail], index) => `
         <button class="opt" onclick="handleOptionSelect(3, '${label}', '${code}')">
-            <div class="opt-ico"><span>${String(index + 1).padStart(2, '0')}</span></div>
+            <div class="opt-ico">${optionIcon(label)}</div>
             <div class="opt-txt"><strong>${label}</strong><span>${detail}</span></div>
             <span class="opt-arrow">→</span>
         </button>`).join('');
@@ -822,7 +854,7 @@ function renderBusinessQuestion() {
     }
     container.innerHTML = current[1].map((label, optionIndex) => {
         const displayLabel = compactButtonLabel(label);
-        return `<button class="opt" onclick="handleOptionSelect(2, '${label.replace(/'/g, "\\'")}', 'answer_${index}_${optionIndex}')"><div class="opt-ico"><span>${String(optionIndex + 1).padStart(2, '0')}</span></div><div class="opt-txt"><strong>${displayLabel}</strong><span>Toque para continuar com a triagem.</span></div><span class="opt-arrow">→</span></button>`;
+        return `<button class="opt" onclick="handleOptionSelect(2, '${label.replace(/'/g, "\\'")}', 'answer_${index}_${optionIndex}')"><div class="opt-ico">${optionIcon(label)}</div><div class="opt-txt"><strong>${displayLabel}</strong><span>Toque para continuar com a triagem.</span></div><span class="opt-arrow">→</span></button>`;
     }).join('');
 }
 
@@ -930,7 +962,7 @@ function renderBusinessQuestion() {
     }
     container.innerHTML = current[1].map((label, optionIndex) => {
         const displayLabel = compactButtonLabel(label);
-        return `<button class="opt" onclick="handleOptionSelect(2, '${label.replace(/'/g, "\\'")}', 'answer_${index}_${optionIndex}')"><div class="opt-ico"><span>${String(optionIndex + 1).padStart(2, '0')}</span></div><div class="opt-txt"><strong>${displayLabel}</strong><span>Toque para continuar com a triagem.</span></div><span class="opt-arrow">→</span></button>`;
+        return `<button class="opt" onclick="handleOptionSelect(2, '${label.replace(/'/g, "\\'")}', 'answer_${index}_${optionIndex}')"><div class="opt-ico">${optionIcon(label)}</div><div class="opt-txt"><strong>${displayLabel}</strong><span>Toque para continuar com a triagem.</span></div><span class="opt-arrow">→</span></button>`;
     }).join('');
 }
 
@@ -954,8 +986,13 @@ function handleOptionSelect(step, label, code) {
             sendAutoHeight();
             return;
         }
-        setupValueOptions();
-        goToStep(3);
+        if (branchNeedsValue()) {
+            setupValueOptions();
+            goToStep(3);
+        } else {
+            state.faixaValor = state.branchAnswers.find(answer => /R\$|mil|acima|não sei/i.test(answer)) || 'Não informado';
+            showAnalysisScreen(resolveOutcome('no_value'));
+        }
         return;
     }
     if (step === 3) {
