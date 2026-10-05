@@ -1,0 +1,9 @@
+.git/
+.vercel/
+node_modules/
+tests/
+video-frames/
+chat.md
+*.docx
+*.mp4
+*.png
