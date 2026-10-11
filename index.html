@@ -1,15 +1,42 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-quiz-theme="maison">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-    <title>Triagem bancária — Dra. Ana Maria Magalhães</title>
+    <title>Triagem bancária | Dra. Ana Maria Magalhães</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" as="image" href="assets/visuals/maison-editorial.webp" fetchpriority="high">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="themes.css">
 </head>
 <body>
+    <nav class="visual-picker" aria-label="Escolha do visual para apresentação">
+        <div class="visual-picker-head">
+            <span class="visual-picker-kicker">Apresentação visual</span>
+            <strong>Escolha uma proposta</strong>
+        </div>
+        <div class="visual-picker-options" role="group" aria-label="Propostas visuais">
+            <button type="button" data-theme-option="maison" aria-pressed="true"><span>Maison</span></button>
+            <button type="button" data-theme-option="monochrome" aria-pressed="false"><span>Mono</span></button>
+            <button type="button" data-theme-option="deco" aria-pressed="false"><span>Art Déco</span></button>
+            <button type="button" data-theme-option="atelier" aria-pressed="false"><span>Atelier</span></button>
+            <button type="button" data-theme-option="sculpted" aria-pressed="false"><span>Sculpted</span></button>
+            <button type="button" data-theme-option="soft" aria-pressed="false"><span>Soft</span></button>
+        </div>
+        <label class="visual-picker-mobile" for="themeSelect">
+            <span>Proposta visual</span>
+            <select id="themeSelect">
+                <option value="maison">Maison Jurídica</option>
+                <option value="monochrome">Monochrome Estate</option>
+                <option value="deco">Art Déco Jurídico</option>
+                <option value="atelier">Atelier Contemporâneo</option>
+                <option value="sculpted">Sculpted Bordeaux</option>
+                <option value="soft">Soft Prestige</option>
+            </select>
+        </label>
+    </nav>
     <main class="stage">
         <div class="shell">
             <aside class="aside">
@@ -123,7 +150,7 @@
                             <div class="authority-divider"></div>
                             <h3 id="authorityTitle">Pontos que merecem análise especializada</h3>
                             <ul class="authority-points" id="authorityPoints"></ul>
-                            <p class="authority-disclaimer">*indicador interno de aderência ao atendimento — não representa probabilidade de êxito nem estatística judicial. Cada caso é único e avaliado individualmente.</p>
+                            <p class="authority-disclaimer">*indicador interno de aderência ao atendimento. Não representa probabilidade de êxito nem estatística judicial. Cada caso é único e avaliado individualmente.</p>
                         </article>
                         <div class="contact-intro">
                             <div class="whatsapp-mark" aria-hidden="true">◔</div>
@@ -168,6 +195,7 @@
             </div>
         </div>
     </main>
+    <script src="theme-switcher.js"></script>
     <script src="quiz-flow.js"></script>
 </body>
 </html>
