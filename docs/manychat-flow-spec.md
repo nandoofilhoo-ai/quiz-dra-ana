@@ -1,163 +1,151 @@
 # Especificação do fluxo ManyChat
 
+Status: fonte operacional consolidada para a primeira fase. O fluxo faz triagem inicial; não promete resultado, desconto, contratação, prazo de solução ou disponibilidade.
+
 ## Abertura
 
 Mensagem-base:
 
-> Olá! Aqui é o atendimento inicial da Dra. Ana Magalhães, advogada especialista em Direito Bancário. Vou fazer algumas perguntas rápidas, de tocar no botão, para entender o seu caso. Leva cerca de 1 minuto e depois um advogado analisa a sua situação. Suas respostas são sigilosas.
+> Olá! Aqui é o atendimento inicial da Dra. Ana Magalhães, advogada especialista em Direito Bancário. Vou fazer algumas perguntas rápidas, de tocar no botão, para entender o seu caso. Depois da devolutiva, se houver continuidade, pediremos seus dados para encaminhar ao atendimento humano. Suas respostas são sigilosas.
 
 Pergunta inicial: “O que está acontecendo com você? Se for mais de uma coisa, escolha a mais urgente.”
 
 | Botão | Ramo | Etiqueta base |
 |---|---|---|
-| Banco me processou | processo | `processo` |
-| Empresa endividada | empresa | `empresa` |
-| Conta bloqueada | bloqueio | `bloqueio` |
-| Recebíveis retidos | recebiveis | `recebiveis` |
-| Sócio ou avalista | avalista | `avalista` |
-| Imóvel em atraso | imovel | `imovel` |
-| Servidor de carreira | servidor | `servidor` |
-| Golpe falsa central | golpe | `golpe` |
-| Meu caso é outro | outro | `outro` |
+| Banco me processou | `processo` | `processo` |
+| Empresa endividada | `empresa` | `empresa` |
+| Conta bloqueada | `bloqueio` | `bloqueio` |
+| Recebíveis retidos | `recebiveis` | `recebiveis` |
+| Sócio ou avalista | `avalista` | `avalista` |
+| Financiamento imobiliário | `imovel` | `imovel` |
+| Servidor de carreira | `servidor` | `servidor` |
+| Golpe PIX de falsa central | `golpe` | `golpe` |
+| Residente no exterior | `exterior` | `exterior` |
+| Meu caso é outro | `outro` | `outro` |
 
 ## Regras gerais
 
-- uma pergunta por mensagem;
-- botões para respostas fechadas;
-- texto livre somente no ramo `outro`;
-- linguagem simples e centrada no relato do cliente;
-- “Não sei” segue para análise quando não houver regra específica;
-- a devolutiva vem antes da captura de contato;
-- o bot se identifica como atendimento inicial automatizado;
-- o atendimento humano avalia documentos, honorários e contratação.
+- Uma pergunta por mensagem.
+- Botões para respostas fechadas; texto livre somente no ramo `outro`.
+- “Não sei” segue para análise quando não houver regra específica.
+- A devolutiva vem antes da captura de contato.
+- Casos dispensados não coletam contato; recebem orientação útil e `Refazer as perguntas`.
+- O bot se identifica como atendimento inicial automatizado.
+- O atendimento humano avalia documentos, honorários e contratação.
+- O consentimento LGPD aparece antes de nome, WhatsApp, cidade, estado e preferência de contato.
+- Faixas de valor registram contexto e priorização; não são corte automático de atendimento.
 
 ## Ramos
 
-### 1 Banco me processou
+### 1. Banco me processou
 
-1. O que você recebeu? — cobrança em poucos dias; penhora ou bloqueio; leilão; busca e apreensão; não sei.
-2. Quando recebeu? — hoje ou ontem; menos de 15 dias; mais de 15 dias; não lembro.
-3. A dívida é de quem? — empresa; pessoal; avalista ou fiador.
-4. Valor cobrado? — até R$ 50 mil; R$ 50 a 100 mil; R$ 100 a 300 mil; R$ 300 a 500 mil; acima de R$ 500 mil; não sei.
-5. Já tem advogado? — não; tenho, mas quero outra opinião; tenho.
+Ramo sempre urgente; a urgência não é reduzida pelo meio de comunicação nem pelo valor.
 
-Hoje/ontem e menos de 15 dias marcam `urgente`. “Tenho” encaminha à dispensa de quem já possui advogado. Documentos: documento do oficial e contrato da dívida.
+1. Como você foi comunicado? — oficial de justiça; carta dos Correios; WhatsApp; outro meio; não sei.
+2. Quanto está sendo cobrado? — faixa de valor; não sei.
+3. Quais bens ou valores estão em risco? — conta; imóvel; veículo; recebíveis; salário/dinheiro; não sei. Permitir múltipla seleção.
 
-### 2 Conta bloqueada
+Registrar `urgente: true` e encaminhar para atendimento humano. Não dispensar automaticamente por valor. A forma de comunicação, o valor e os bens em risco são suficientes para a triagem inicial; documentos só são solicitados no atendimento humano.
 
-1. Quem bloqueou? — Justiça por processo; próprio banco; não sei.
-2. Quando? — hoje ou ontem; nesta semana; há mais de uma semana.
-3. Quanto? — até R$ 20 mil; R$ 20 a 100 mil; R$ 100 a 500 mil; acima de R$ 500 mil; não sei.
-4. Destino do dinheiro? — folha; fornecedores e impostos; reserva; outro.
-5. Origem bancária? — sim; não, outra origem; não sei.
+### 2. Conta bloqueada
 
-Bloqueio judicial é `urgente`. Origem trabalhista ou fiscal recebe `fora_do_bancario` e aguarda decisão sobre atendimento. Documentos: extrato e número do processo, se houver.
+1. Quem originou o bloqueio? — banco; Justiça; não sei.
+2. A origem é bancária, fiscal ou trabalhista? — bancária; fiscal; trabalhista; não sei.
+3. O que foi bloqueado e qual o impacto? — conta; recebíveis; salário; reserva; outro; não sei.
 
-### 3 Recebíveis retidos
+Origem fiscal ou trabalhista recebe orientação para advogado da área correspondente, Defensoria ou entidade de classe, sem captura de contato e sem ser tratada como atuação bancária. “Não sei” segue para análise.
+
+### 3. Recebíveis retidos
 
 1. O que está retido? — maquininha; duplicatas/boletos; aplicação/saldo; não sei.
-2. Ligado a qual dívida? — capital de giro; antecipação; cheque especial/conta garantida; não sei.
-3. Percentual retido? — menos de 30%; 30% a 60%; mais de 60%; praticamente tudo.
-4. Parcelas? — em dia; atrasadas; renegociadas e sem pagamento.
-5. Valor da dívida? — faixas padrão; não sei.
+2. A retenção está ligada a qual dívida? — capital de giro; antecipação; cheque especial/conta garantida; não sei.
+3. Qual a proporção aproximada? — menos de 30%; 30% a 60%; mais de 60%; praticamente tudo; não sei.
+4. As parcelas estão — em dia; atrasadas; renegociadas e sem pagamento; não sei.
 
-Mais de 60% ou praticamente tudo marca `urgente`. Documentos: contrato e extrato da maquininha ou conta vinculada.
+Mais de 60% ou praticamente tudo pode marcar urgência para análise. Não há oferta de laudo nem dispensa automática por faixa.
 
-### 4 Empresa endividada
+### 4. Empresa endividada
 
-1. Dívida principal? — Pronampe/FGI; capital de giro; cheque especial; cartão; mais de uma.
-2. Situação? — em dia, mas sufocando caixa; atrasadas; renegociadas; negativação/protesto; juros altos.
-3. Total devido? — faixas padrão; não sei.
-4. Garantia? — aval dos sócios; imóvel/veículo; recebíveis; fundo garantidor; não sei.
-5. Empresa funciona? — faturando normalmente; faturando pouco; parada.
+1. Qual a dívida principal? — Pronampe/FGI; capital de giro; cheque especial; cartão; mais de uma; não sei.
+2. Qual a situação? — em dia, mas sufocando caixa; atrasadas; renegociadas; negativação/protesto; juros altos; não sei.
+3. Qual a faixa do total devido? — faixa de valor; não sei.
+4. Há garantia? — aval dos sócios; imóvel/veículo; recebíveis; fundo garantidor; não sei.
+5. A empresa funciona? — faturando normalmente; faturando pouco; parada; não sei.
 
-“Recebíveis” adiciona `recebiveis`; “aval dos sócios” adiciona `avalista`. Documentos: contratos e extratos dos últimos três meses.
+“Recebíveis” adiciona `recebiveis`; “aval dos sócios” adiciona `avalista`. A faixa não gera corte automático.
 
-### 5 Sócio ou avalista
+### 5. Sócio ou avalista
 
-1. Situação? — avalista da empresa; sócio de empresa devedora; saiu da sociedade; avalista de outra pessoa.
-2. O que aconteceu? — cobranças; negativação; processo; bloqueio de conta/bem.
-3. Valor? — faixas padrão; não sei.
+1. Qual a situação? — avalista da empresa; sócio de empresa devedora; saiu da sociedade; avalista de outra pessoa; não sei.
+2. O que aconteceu? — cobranças; negativação; processo; bloqueio de conta/bem; não sei.
+3. Qual a faixa do valor? — faixa de valor; não sei.
 4. O que teme perder? — moradia; outros imóveis; veículos; salário/dinheiro; não sei.
-5. Empresa ativa? — sim; parada; encerrada.
+5. A empresa está — ativa; parada; encerrada; não sei.
 
-Processo ou bloqueio marca `urgente`. Documentos: contrato assinado e contrato social.
+Processo ou bloqueio pode marcar urgência. Não há oferta de laudo nem corte automático.
 
-### 6 Imóvel em atraso
+### 6. Financiamento imobiliário
 
-1. Parcelas atrasadas? — 1 ou 2; 3 ou mais; não sei.
-2. Aviso recebido? — nenhum; cobrança; cartório; leilão; já foi a leilão.
-3. Financiador? — Caixa; outro banco; construtora/incorporadora.
-4. Imóvel? — moradia; investimento; comercial.
-5. Saldo a pagar? — faixas padrão; não sei.
+Abrange tanto quem está inadimplente quanto quem ainda está adimplente, mas tem parcela insustentável.
 
-Cartório, leilão ou imóvel já leiloado marca `urgente`. Documentos: contrato e notificações.
+1. Como estão as parcelas? — em dia, mas insustentáveis; atrasadas; renegociadas; não sei.
+2. Que aviso foi recebido? — nenhum; cobrança; cartório; leilão; já foi a leilão; não sei.
+3. Quem financiou? — Caixa; outro banco; construtora/incorporadora; não sei.
+4. Qual o uso do imóvel? — moradia; investimento; comercial; não sei.
+5. Qual a faixa do saldo? — faixa de valor; não sei.
 
-### 7 Servidor de carreira
+Cartório, leilão ou imóvel já leiloado pode marcar urgência. A faixa não é corte automático.
 
-1. Vínculo? — federal; estadual; municipal; militar; aposentado/pensionista.
-2. Renda bruta? — até R$ 10 mil; R$ 10 a 20 mil; R$ 20 a 30 mil; acima de R$ 30 mil.
-3. Dívida principal? — consignado; débito em conta; cartão consignado; cartão/cheque especial; várias.
-4. Tempo de serviço? — menos de 5 anos; 5 a 10; mais de 10.
-5. Tempo de empréstimos/refinanciamentos? — menos de 5 anos; 5 a 10; mais de 10.
+### 7. Servidor de carreira
 
-Renda a partir de R$ 10 mil, mais de 10 anos de serviço e pelo menos 5 anos de empréstimos recebem `servidor_nulidade` e atendimento direto. Os demais recebem `servidor_fora_do_perfil` e seguem sem prioridade. Não há filtro de valor nem oferta de laudo. Documentos: contracheque e lista das dívidas.
+1. Qual o vínculo? — federal; estadual; municipal; militar; aposentado/pensionista; não sei.
+2. Qual a faixa da renda bruta? — faixas de renda; não sei.
+3. Qual a dívida principal? — consignado; débito em conta; cartão consignado; cartão/cheque especial; várias; não sei.
+4. Há quanto tempo existem empréstimos/refinanciamentos? — faixas de tempo; não sei.
 
-### 8 Golpe da falsa central
+O ramo segue para análise sem oferta de laudo. Não criar corte automático ou promessa a partir de renda/tempo enquanto a regra comercial não estiver confirmada.
 
-1. Como aconteceu? — ligação falsa com PIX; instalação de aplicativo; empréstimo na ligação; outro golpe.
-2. Prejuízo? — até R$ 30 mil; R$ 30 a 50 mil; R$ 50 a 100 mil; acima de R$ 100 mil.
-3. Quando? — últimos dias; último mês; 1 a 3 meses; mais de 3 meses.
-4. O que fez? — boletim e reclamação; uma das duas; nada.
-5. Resposta do banco? — negou; não respondeu; devolveu parte; devolveu tudo.
+### 8. Golpe PIX de falsa central
 
-“Outro golpe” vai à dispensa fora do escopo. “Devolveu tudo” vai à dispensa de prejuízo já devolvido. Últimos dias marca `urgente`. Até R$ 30 mil é corte sugerido. Documentos: boletim, comprovante do PIX e resposta do banco.
+1. Como aconteceu? — ligação falsa com PIX; instalação de aplicativo; empréstimo na ligação; não sei.
+2. Qual a faixa do prejuízo? — faixa de valor; não sei.
+3. Quando aconteceu? — últimos dias; último mês; 1 a 3 meses; mais de 3 meses; não sei.
+4. O que foi feito? — boletim e reclamação; uma das duas; nada; não sei.
+5. Qual foi a resposta do banco? — negou; não respondeu; devolveu parte; devolveu tudo; não sei.
 
-### 9 Meu caso é outro
+Somente a falsa central com PIX está no escopo. Outro tipo de golpe recebe orientação geral de boletim, contestação, Banco Central ou Procon e é dispensado sem captura de contato. “Devolveu tudo” recebe orientação de que não há prejuízo pendente e opção de refazer. Últimos dias podem marcar urgência. Não há oferta de laudo.
 
-1. Problema com dívida da empresa, dívida pessoal ou outro assunto bancário?
+### 9. Residente no exterior
+
+1. Qual é a situação? — tenho conta ou dívida no Brasil; quero investir no Brasil; imóvel no Brasil; outro assunto bancário; não sei.
+2. Existe bloqueio, cobrança ou prazo? — sim; não; não sei.
+
+“Quero investir no Brasil” é a nomenclatura aprovada. “Não sei” segue para análise; não presumir elegibilidade comercial.
+
+### 10. Meu caso é outro
+
+1. O problema envolve dívida da empresa, dívida pessoal ou outro assunto bancário?
 2. Existe processo, bloqueio ou prazo? — sim; não; não sei.
 3. Conte em uma ou duas frases o que está acontecendo. — texto livre.
 
-Não há dispensa automática; o relato sempre segue para atendimento humano.
+Não há dispensa automática; o relato segue para atendimento humano depois da devolutiva.
 
-## Qualificação comercial
+## Qualificação e dispensas
 
-Aplicável aos ramos de processo, recebíveis, empresa, avalista e imóvel:
+Não há oferta de laudo na V1. Nenhuma faixa de valor, isoladamente, dispensa o caso. Toda dispensa deve estar ligada a uma regra específica acima, ter orientação útil e terminar com `Refazer as perguntas`, sem captura de contato.
 
-| Faixa | Etiqueta | Ação |
-|---|---|---|
-| Até R$ 50 mil | `laudo` | oferecer laudo; se recusar, dispensar |
-| R$ 50 a 100 mil | `laudo_fechar` | oferecer laudo e permitir tentativa comercial |
-| R$ 100 a 300 mil | `revisar` | fechamento normal e análise humana |
-| R$ 300 a 500 mil | `revisar` | fechamento normal e análise humana |
-| Acima de R$ 500 mil | `prioridade_maxima` | aviso imediato e contato no mesmo dia |
-| Não sei | `revisar` | fechamento normal e análise humana |
+Dispensas confirmadas:
 
-No golpe, o corte é pelo prejuízo. O ramo de servidor não usa filtro de valor.
+- origem fiscal ou trabalhista em conta bloqueada: orientar advogado da área, Defensoria ou entidade de classe;
+- golpe fora da falsa central com PIX: orientar boletim, contestação, Banco Central ou Procon;
+- prejuízo integralmente devolvido: explicar que não há prejuízo pendente;
+- caso já acompanhado por advogado, se essa pergunta for adicionada ao fluxo: orientar a tratar prazos com o advogado atual.
 
-O preço do laudo e o prazo de retorno são `PENDENTES DE CONFIRMAÇÃO` e não podem ser inventados no bot.
-
-## Oferta e dispensas
-
-Oferta de laudo:
-
-> Pelo valor da dívida, uma ação judicial tende a custar mais do que o resultado. Para casos assim, o escritório oferece um laudo de análise do contrato. Ele mostra se há cobranças indevidas e serve de base para negociar com o banco. Quer saber como funciona?
-
-Botões: `Quero saber` e `Agora não`.
-
-Dispensas previstas:
-
-- valor abaixo do mínimo: orientar consumidor.gov.br, Procon ou ouvidoria;
-- golpe fora do escopo: orientar boletim, contestação, Banco Central e Procon;
-- prejuízo já devolvido: explicar que não há prejuízo pendente;
-- já tem advogado: orientar a tratar prazos com o advogado atual.
-
-Toda dispensa termina com `Refazer as perguntas`. Critérios ainda não confirmados devem permanecer desativados até decisão explícita.
+Não inventar preço, prazo, disponibilidade, limite de atendimento ou critério comercial.
 
 ## Captura e consentimento
 
-Depois da devolutiva, pedir nome completo, WhatsApp com DDD, cidade/estado e melhor horário: manhã, tarde ou noite. Pular o WhatsApp quando o canal já fornecer o identificador adequado.
+Depois da devolutiva, quando houver continuidade, pedir nome completo, WhatsApp com DDD, cidade/estado e melhor período: manhã ou tarde. O WhatsApp pode ser dispensado quando o canal já fornecer identificador adequado.
 
 Mensagem obrigatória antes da coleta:
 
@@ -167,7 +155,10 @@ Mensagem obrigatória antes da coleta:
 
 Mensagem-base:
 
-> Pronto, [nome]. Recebi as suas respostas e já encaminhei o seu caso. Um advogado da equipe da Dra. Ana Magalhães fala com você em até [prazo]. Para adiantar a análise, separe se puder: [documentos do ramo].
+> Pronto, [nome]. Recebi as suas respostas e encaminhei o seu caso para a análise inicial. Um advogado da equipe da Dra. Ana Magalhães falará com você após a triagem da equipe. Para adiantar a análise, separe, se puder, os documentos relacionados ao seu ramo.
 
-Para `urgente`, substituir a frase de prazo por: “Como o seu caso tem prazo, ele entrou na fila de prioridade.” Não publicar `[prazo]` até a confirmação da cliente.
+Para `urgente`:
 
+> Como o seu caso pode envolver prazo, ele foi sinalizado para prioridade de análise. Isso não representa garantia de resultado ou de atendimento em prazo determinado.
+
+Não publicar prazo entre colchetes nem afirmar que uma integração externa foi concluída enquanto o n8n estiver desativado.

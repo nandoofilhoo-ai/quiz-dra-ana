@@ -2,85 +2,72 @@
 
 ## Objetivo
 
-Construir uma entrada automatizada para Instagram, WhatsApp e, quando suportado pela ferramenta escolhida, TikTok. A automação transforma comentários, mensagens diretas e acessos sociais em uma triagem curta de Direito Bancário, filtrando casos fora do perfil antes de consumir tempo da equipe.
+Construir uma entrada automatizada para Instagram, WhatsApp e, quando suportado e autorizado, TikTok. A automação encaminha pessoas para uma triagem curta de Direito Bancário, sem substituir o atendimento jurídico.
 
-O ManyChat não substitui o atendimento jurídico. Ele coleta contexto, aplica filtros previamente aprovados, entrega orientação inicial sem promessa de resultado e encaminha os casos adequados para um advogado.
+O bot coleta contexto, aplica somente filtros confirmados, entrega orientação inicial sem promessa de resultado e encaminha os casos adequados para atendimento humano. Uma pergunta deve ser apresentada por mensagem; respostas fechadas usam botões e texto livre fica restrito a “Meu caso é outro”.
 
-## Relação com o quiz web
+## Fonte de verdade consolidada
 
-O projeto possui um quiz web standalone na Vercel. Ele implementa uma versão detalhada da triagem, recebe respostas, qualifica o lead e pode redirecionar para o WhatsApp.
+- Visual aprovado para o formulário: `Sculpted Bordeaux`.
+- Laudo removido da V1: não há oferta, preço, caminho de contratação ou coleta de contato associada a laudo.
+- CRM, GA4/GTM e domínio permanecem adiados até que acessos e definições estejam disponíveis.
+- A conta ManyChat não é auditável enquanto o token disponível retornar HTTP 401.
+- O n8n não é auditável nem ativável sem URL base e chave `X-N8N-API-KEY` fornecidas com segurança.
+- Faixas de valor são contexto/priorização; não há corte automático por valor sem decisão comercial confirmada.
+- “Não sei” não elimina automaticamente o lead.
+- A devolutiva vem antes da captura de contato. Casos dispensados recebem orientação útil e a opção de refazer as perguntas, sem coleta de contato.
 
-O ManyChat é a camada de aquisição e triagem social. As duas superfícies precisam usar os mesmos nomes de ramos, critérios e categorias, mas uma alteração em uma superfície não atualiza automaticamente a outra.
+## Relação com o formulário
 
-## Entradas previstas
+O projeto possui um formulário web standalone. Ele implementa a triagem detalhada, registra eventos locais conforme `docs/event-contract.md` e pode encaminhar o caso ao canal humano aprovado. O endpoint n8n continua desativado enquanto a URL base não for fornecida.
 
-- comentário em post ou Reel com palavras-chave como `DIREITO`, `GOLPE` ou `BANCO`;
-- mensagem direta recebida;
-- palavra-chave enviada na DM;
-- novo seguidor, quando o canal e a conta permitirem;
-- link social rastreado para o quiz web.
+O ManyChat é a camada de aquisição e triagem social. As duas superfícies usam os mesmos ramos e categorias:
 
-Palavras-chave, fallbacks e follow-ups ainda precisam ser cadastrados e validados na conta ManyChat.
+| Ramo técnico | Rótulo público | Público de referência |
+|---|---|---|
+| `processo` | Banco me processou | PF/PJ |
+| `empresa` | Empresa endividada | PJ |
+| `bloqueio` | Conta bloqueada | PF/PJ |
+| `recebiveis` | Recebíveis retidos | PJ |
+| `avalista` | Sócio ou avalista | PF/PJ |
+| `imovel` | Financiamento imobiliário | PF/PJ |
+| `servidor` | Servidor de carreira | PF |
+| `golpe` | Golpe PIX de falsa central | PF |
+| `exterior` | Residente no exterior | PF |
+| `outro` | Meu caso é outro | PF/PJ |
 
-## Saída esperada
+Uma alteração em uma superfície não atualiza automaticamente a outra; qualquer mudança deve atualizar a especificação e o contrato de eventos.
 
-1. Identificar o ramo do caso.
-2. Guardar respostas e classificação.
-3. Marcar urgência quando aplicável.
-4. Oferecer laudo ou dispensar conforme a regra aprovada.
-5. Coletar contato somente quando houver continuidade.
-6. Registrar origem, campanha e ponto de entrada.
-7. Encaminhar o lead ao atendimento humano.
+## Entradas sociais
 
-## Dados mínimos para o atendimento
+As automações podem começar por comentário, mensagem direta, palavra-chave, novo seguidor quando o canal permitir ou link rastreado. As mensagens operacionais, palavras-chave e condições ficam em `docs/social-automation-spec.md`.
 
-- ramo e etiqueta base;
-- urgência;
-- pessoa física ou empresa;
-- faixa de valor ou prejuízo;
-- respostas do ramo;
-- nome, WhatsApp, cidade, estado e melhor horário;
-- origem, campanha, post, Reel ou palavra-chave;
-- documentos recomendados para a análise inicial.
+Todas as mensagens direcionam para o formulário pelo link oficial do canal. Não inserir URL fictícia, não pedir documentos em comentários e não prestar consultoria por DM.
 
-## Integrações previstas
+## Integrações e estado
 
-- ManyChat: conversa, campos, etiquetas e disparo do fluxo;
-- quiz web: triagem detalhada e captura de leads;
-- n8n: webhook `/webhook/quiz-events`;
-- Google Sheets: `Analytics_Funil` e `Leads_Qualificados`;
-- PipeZ: CRM de leads qualificados;
-- WhatsApp comercial: atualmente `5524992331416`.
+- ManyChat: configuração e auditoria bloqueadas pelo retorno HTTP 401 do token disponível.
+- Formulário web: fonte executável da triagem; visual aprovado `Sculpted Bordeaux`.
+- n8n: contrato local em `docs/event-contract.md`; endpoint desativado até existir URL base e `X-N8N-API-KEY` segura.
+- Google Sheets: dependência de analytics/contingência adiada com GA4/GTM; não é ferramenta operacional diária.
+- CRM: adiado; não há integração nem ID para versionar.
+- WhatsApp comercial: o número atualmente presente no frontend permanece pendente de confirmação e não é tratado como definitivo neste documento.
+- Domínio e deploy público: adiados até configuração e validação.
 
-O workflow n8n já contém Webhook, Switch, Google Sheets e HTTP Request para PipeZ, mas ainda possui placeholders de credenciais, planilha, token e endpoint.
+## Dados e segurança
 
-## Estado atual
+O fluxo pode usar ramo, urgência, etiquetas, faixa de valor, respostas estruturadas, UTMs e dados de contato somente após consentimento. Analytics não contém PII. Não versionar tokens, credenciais, IDs privados, documentos jurídicos ou dados reais de leads.
 
-Implementado ou parcialmente implementado:
+O consentimento obrigatório é exibido antes da captura:
 
-- quiz web em HTML, CSS e JavaScript;
-- regras de navegação e qualificação cobertas por 14 testes aprovados;
-- redirecionamento para WhatsApp ao concluir lead qualificado;
-- esqueleto do workflow n8n;
-- definição dos nove ramos do ManyChat.
+> Ao enviar seus dados, você autoriza o nosso contato por WhatsApp ou telefone. Suas informações são tratadas com sigilo, conforme a LGPD.
 
-Pendente:
+## Pendências que continuam pendentes
 
-- configuração real da conta ManyChat;
-- palavras-chave, gatilhos, fallbacks e follow-ups;
-- preço do laudo;
-- prazo real de retorno;
-- estados e cidades atendidos;
-- critérios finais de dispensa;
-- credenciais e IDs do Google Sheets;
-- endpoint e token do PipeZ;
-- GTM, GA4 e eventos `dataLayer`;
-- deploy e domínio definitivo do quiz.
+- Acessos válidos à conta ManyChat, Instagram e TikTok.
+- URL base e chave segura do n8n.
+- Decisão e acesso ao CRM.
+- Configuração de GA4/GTM, domínio e publicação.
+- Confirmação do número comercial, horários de contato e dados institucionais.
 
-## Cuidados
-
-- Confirmar limites de caracteres e tipos de botão por canal.
-- Manter uma pergunta por mensagem e linguagem simples.
-- Não prometer êxito, economia, prazo de solução ou resultado judicial.
-- Não transformar item pendente em regra automática sem confirmação.
-
+Nenhum item pendente deve ser transformado em requisito automático ou marcado como concluído sem evidência.
