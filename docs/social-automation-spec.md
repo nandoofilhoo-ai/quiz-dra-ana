@@ -54,7 +54,7 @@ Se a janela estiver fechada, não disparar a mensagem. Não coletar contato no f
 
 Texto para bio, encerramento de vídeo ou comentário:
 
-> Tem dúvida sobre banco, bloqueio, PIX, financiamento ou recebíveis? Acesse o formulário de triagem pelo link oficial da bio. Responda às perguntas e receba uma orientação inicial; não envie documentos nos comentários.
+> Tem dúvida sobre banco, bloqueio, PIX, financiamento ou recebíveis? Acesse o formulário de triagem pelo link oficial da bio. Responda às perguntas para concluir a triagem inicial; não envie documentos nos comentários.
 
 CTA curto: `Faça a triagem no link da bio.`
 

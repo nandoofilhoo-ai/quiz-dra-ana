@@ -124,7 +124,7 @@ Somente a falsa central com PIX está no escopo. Outro tipo de golpe recebe orie
 
 ### 10. Meu caso é outro
 
-1. O problema envolve dívida da empresa, dívida pessoal ou outro assunto bancário?
+1. O problema envolve — Dívida da empresa; Dívida pessoal; Outro assunto bancário.
 2. Existe processo, bloqueio ou prazo? — sim; não; não sei.
 3. Conte em uma ou duas frases o que está acontecendo. — texto livre.
 
@@ -145,7 +145,7 @@ Não inventar preço, prazo, disponibilidade, limite de atendimento ou critério
 
 ## Captura e consentimento
 
-Depois da devolutiva, quando houver continuidade, pedir nome completo, WhatsApp com DDD, cidade/estado e melhor período: manhã ou tarde. O WhatsApp pode ser dispensado quando o canal já fornecer identificador adequado.
+Para este formulário web, depois da devolutiva, pedir nome completo, WhatsApp com DDD obrigatório, cidade/estado e melhor período: manhã ou tarde. A exceção de WhatsApp nulo pertence somente à variante futura de lead nativo ManyChat descrita em `docs/event-contract.md`; ela exige `channel`, `channel_user_id` e consentimento para contato nesse canal.
 
 Mensagem obrigatória antes da coleta:
 

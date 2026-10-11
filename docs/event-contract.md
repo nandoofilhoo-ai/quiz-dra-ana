@@ -67,13 +67,24 @@ O evento é permitido somente após a mensagem de consentimento LGPD e a devolut
 | `utm_campaign` | string ou `null` | Parâmetro UTM, quando presente. |
 | `consent_version` | string | Versão do texto de consentimento exibido. |
 | `consent_timestamp` | string | Data/hora ISO 8601 em UTC do consentimento. |
+| `channel` | string | Discriminador do canal: `web_form` para este formulário ou `manychat_native` para um futuro lead nativo do ManyChat. |
+| `channel_user_id` | string ou `null` | Obrigatório em `manychat_native`; deve ser `null` ou omitido em `web_form`. |
 | `name` | string | Nome informado pelo titular após o consentimento. |
-| `whatsapp` | string | WhatsApp informado pelo titular após o consentimento. |
+| `whatsapp` | string ou `null` | Obrigatório e não nulo em `web_form`. Só pode ser `null` em `manychat_native` quando `channel_user_id` estiver presente e o consentimento autorizar contato nesse canal. |
 | `city` | string | Cidade informada pelo titular. |
 | `state` | string | Estado informado pelo titular. |
 | `contact_period` | string | Preferência de contato permitida pelo fluxo. |
 
 O payload não deve conter token, chave de API, ID privado de planilha, documento jurídico, senha ou dados reais usados como exemplo.
+
+### Contrato discriminado por canal
+
+O evento `lead_submission` usa `channel` como discriminador:
+
+- `channel: "web_form"`: variante vigente. `whatsapp` é obrigatório após o consentimento; `channel_user_id` deve ser `null` ou não ser enviado. O formulário web não pode dispensar o WhatsApp por identificar a origem do acesso.
+- `channel: "manychat_native"`: variante futura e ainda não ativada. `channel_user_id` é obrigatório. `whatsapp` pode ser `null` somente quando esse identificador existir e o consentimento autorizar contato pelo canal ManyChat; caso contrário, o WhatsApp continua obrigatório.
+
+Assim, não existe uma regra geral de “pular o WhatsApp”: a exceção depende simultaneamente do canal nativo, do identificador do usuário e do consentimento compatível.
 
 ## Endpoint e estado de ativação
 
