@@ -27,11 +27,13 @@ Arquivo de acompanhamento vivo. Um item só é marcado como concluído quando ex
 
 ## Auditoria e integrações externas
 
-- [!] Conta ManyChat não auditável enquanto o token disponível retornar HTTP 401.
-- [!] n8n não auditável/ativável sem URL base e chave `X-N8N-API-KEY` fornecidas com segurança.
+- [!] Conta ManyChat não auditável/configurável enquanto o token disponibilizado retornar HTTP 401. A API pública também não cria gatilhos ou fluxos visuais do Instagram; a configuração depende da interface e de acesso administrativo válido.
+- [x] `n8n_workflow.json` revisado como template local inativo: nós de escrita desabilitados, sem CRM ou token literal.
+- [!] n8n remoto não ativável sem URL base, chave de API pública com escopo necessário, URL final do webhook e destino aprovado para os dados.
 - [~] CRM adiado; não versionar tokens, credenciais, IDs privados ou placeholders que aparentem integração ativa.
 - [~] GA4/GTM adiados; a telemetria futura deve seguir o contrato local sem PII.
 - [~] Domínio, deploy público e link oficial do formulário adiados.
+- [!] TikTok não configurado: acesso e permissões do canal ainda não foram disponibilizados.
 - [ ] Confirmar o número comercial antes de tratá-lo como definitivo ou publicar alterações.
 - [ ] Confirmar horários de contato e dados institucionais antes de exibi-los.
 
@@ -39,27 +41,28 @@ Arquivo de acompanhamento vivo. Um item só é marcado como concluído quando ex
 
 - [x] Aplicação standalone em `index.html`, `style.css` e `quiz-flow.js`.
 - [x] Fluxo inicial preserva `Conta bloqueada` e `Recebíveis retidos` como entradas separadas.
-- [ ] Fixar o visual `Sculpted Bordeaux` como padrão e remover o seletor de apresentação.
-- [ ] Manter opções iniciais em lista vertical e marcadores de público `PF`/`PJ`.
-- [ ] Substituir referências visíveis a “quiz” por “formulário”.
-- [ ] Implementar tela “Resultado apurado”, indicador qualitativo de urgência e texto de cautela para prazo.
-- [ ] Ajustar preferência de contato para manhã ou tarde.
-- [ ] Implementar as regras consolidadas em `docs/manychat-flow-spec.md`.
-- [ ] Remover qualquer caminho executável de laudo e confirmar que dispensas não coletam contato.
-- [ ] Capturar consentimento versionado e UTMs minimizadas conforme `docs/event-contract.md`.
+- [x] Visual `Sculpted Bordeaux` fixado como padrão; seletor de apresentação removido.
+- [x] Opções iniciais em lista vertical com marcadores de público `PF`/`PJ`.
+- [x] Referências visíveis substituídas por “formulário”.
+- [x] Tela “Resultado apurado”, indicador qualitativo de urgência e texto de cautela para prazo implementados.
+- [x] Preferência de contato limitada a manhã ou tarde.
+- [x] Regras consolidadas de `docs/manychat-flow-spec.md` implementadas no frontend.
+- [x] Caminhos executáveis de laudo removidos; dispensas confirmadas não coletam contato.
+- [x] Consentimento versionado e UTMs minimizadas implementados conforme `docs/event-contract.md`.
 
 ## n8n e telemetria
 
 - [x] Workflow contém o esqueleto de webhook e roteamento para referência local.
-- [ ] Manter o workflow inativo e sem escritas externas até a Task 4 validar a configuração segura.
-- [ ] Validar eventos locais sem PII e o fallback de encaminhamento humano quando o endpoint estiver desativado.
+- [x] Workflow mantido inativo e sem escritas externas; a ativação depende da configuração segura do n8n remoto.
+- [x] Eventos locais sem PII e fallback de encaminhamento humano com endpoint desativado validados por testes.
 
 ## QA e entrega
 
-- [x] Testes existentes do fluxo e do seletor visual registrados no repositório.
-- [ ] Atualizar testes para nomenclaturas, urgência, exterior, financiamento e ausência de laudo.
-- [ ] Executar suíte completa, validação sintática e `git diff --check` após as Tasks 2–4.
-- [ ] Validar o comportamento de casos dispensados sem captura de contato.
+- [x] Testes do fluxo e da apresentação registrados no repositório.
+- [x] Testes atualizados para nomenclaturas, urgência, exterior, financiamento e ausência de laudo.
+- [x] Suíte automatizada, validação sintática e checagem de diff executadas nesta fase.
+- [x] Comportamento de casos dispensados sem captura de contato validado por testes.
+- [-] Validação visual manual responsiva/mobile em correção; não considerar concluída nesta fase.
 - [ ] Entregar configuração das automações sociais somente depois dos acessos e permissões da cliente.
 
 ## Nomenclaturas históricas substituídas
@@ -80,6 +83,7 @@ Os termos abaixo só podem aparecer em histórico ou auditoria; não são requis
 |---|---|---|---|
 | 2026-10-06 | Checklist criado na raiz do projeto | Concluído | Estado inicial do projeto registrado. |
 | 2026-10-08 | Variações visuais para aprovação | Concluído | Curadoria visual preservada; a aprovação final foi registrada abaixo. |
-| 2026-10-11 | Aprovação visual da cliente | Concluído | A cliente escolheu `Sculpted Bordeaux`; remoção do seletor continua na fila de frontend. |
+| 2026-10-11 | Aprovação visual da cliente | Concluído | A cliente escolheu `Sculpted Bordeaux`; o visual foi fixado no formulário e o seletor removido. |
 | 2026-10-11 | Consolidação da reunião de 09/10 | Concluído | Nomenclaturas, urgência, laudo, integrações e automações sociais consolidados sem inventar pendências comerciais. |
 | 2026-10-11 | Contratos da primeira fase | Concluído | `docs/event-contract.md` e `docs/social-automation-spec.md` criados; integrações externas permanecem adiadas/bloqueadas. |
+| 2026-10-11 | Fechamento documental e QA automatizado | Concluído | Triagem e template n8n validados localmente; ManyChat, TikTok, deploy e integrações remotas permanecem pendentes de acesso/configuração. |
