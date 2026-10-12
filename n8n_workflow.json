@@ -1,5 +1,6 @@
 {
-  "name": "Quiz Bancário - Dra. Ana Maria Magalhães (Analytics & PipeZ)",
+  "name": "TEMPLATE INATIVO — Quiz Bancário (integrações adiadas)",
+  "active": false,
   "nodes": [
     {
       "parameters": {
@@ -61,9 +62,18 @@
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
+            "Event_Type": "={{ $json.body.event_type }}",
+            "Session_ID": "={{ $json.body.session_id }}",
+            "Event_ID": "={{ $json.body.event_id }}",
             "Timestamp": "={{ $json.body.timestamp }}",
-            "Session_ID": "={{ $json.body.sessionId }}",
-            "Etapa_Alcancada": "={{ $json.body.step }}"
+            "Branch": "={{ $json.body.branch }}",
+            "Branch_Label": "={{ $json.body.branch_label }}",
+            "Urgent": "={{ $json.body.urgent }}",
+            "Tags": "={{ JSON.stringify($json.body.tags) }}",
+            "Value_Range": "={{ $json.body.value_range }}",
+            "UTM_Source": "={{ $json.body.utm_source }}",
+            "UTM_Medium": "={{ $json.body.utm_medium }}",
+            "UTM_Campaign": "={{ $json.body.utm_campaign }}"
           }
         },
         "options": {}
@@ -76,6 +86,7 @@
         800,
         180
       ],
+      "disabled": true,
       "credentials": {
         "googleSheetsOAuth2Api": {
           "id": "GOOGLE_SHEETS_CREDENTIAL_ID",
@@ -99,13 +110,28 @@
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
-            "Data": "={{ $json.body.timestamp }}",
-            "Nome": "={{ $json.body.nome }}",
+            "Event_Type": "={{ $json.body.event_type }}",
+            "Session_ID": "={{ $json.body.session_id }}",
+            "Event_ID": "={{ $json.body.event_id }}",
+            "Timestamp": "={{ $json.body.timestamp }}",
+            "Branch": "={{ $json.body.branch }}",
+            "Branch_Label": "={{ $json.body.branch_label }}",
+            "Urgent": "={{ $json.body.urgent }}",
+            "Tags": "={{ JSON.stringify($json.body.tags) }}",
+            "Value_Range": "={{ $json.body.value_range }}",
+            "Answers": "={{ JSON.stringify($json.body.answers) }}",
+            "UTM_Source": "={{ $json.body.utm_source }}",
+            "UTM_Medium": "={{ $json.body.utm_medium }}",
+            "UTM_Campaign": "={{ $json.body.utm_campaign }}",
+            "Consent_Version": "={{ $json.body.consent_version }}",
+            "Consent_Timestamp": "={{ $json.body.consent_timestamp }}",
+            "Channel": "={{ $json.body.channel }}",
+            "Channel_User_ID": "={{ $json.body.channel_user_id }}",
+            "Name": "={{ $json.body.name }}",
             "WhatsApp": "={{ $json.body.whatsapp }}",
-            "Problema": "={{ $json.body.problema }}",
-            "Detalhe_Origem": "={{ $json.body.detalhe_origem }}",
-            "Faixa_Valor": "={{ $json.body.valor_divida }}",
-            "Session_ID": "={{ $json.body.sessionId }}",
+            "City": "={{ $json.body.city }}",
+            "State": "={{ $json.body.state }}",
+            "Contact_Period": "={{ $json.body.contact_period }}",
             "Status": "Novo Lead - Dra. Ana"
           }
         },
@@ -119,6 +145,7 @@
         800,
         380
       ],
+      "disabled": true,
       "credentials": {
         "googleSheetsOAuth2Api": {
           "id": "GOOGLE_SHEETS_CREDENTIAL_ID",
@@ -129,7 +156,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $vars.PIPEZ_API_URL || 'https://api.pipez.crm/v1/leads' }}",
+        "url": "={{ $vars.PIPEZ_API_URL }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -139,13 +166,13 @@
             },
             {
               "name": "Authorization",
-              "value": "=Bearer {{ $vars.PIPEZ_API_KEY || 'SEU_TOKEN_PIPEZ_AQUI' }}"
+              "value": "=Bearer {{ $vars.PIPEZ_API_KEY }}"
             }
           ]
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"name\": \"{{ $json.body.nome }}\",\n  \"phone\": \"{{ $json.body.whatsapp }}\",\n  \"destinationPhone\": \"5524992331416\",\n  \"advogada\": \"Dra. Ana Maria Magalhães\",\n  \"source\": \"Quiz Web Vercel\",\n  \"sessionId\": \"{{ $json.body.sessionId }}\",\n  \"customFields\": {\n    \"problema\": \"{{ $json.body.problema }}\",\n    \"detalhe_origem\": \"{{ $json.body.detalhe_origem }}\",\n    \"faixa_valor\": \"{{ $json.body.valor_divida }}\"\n  },\n  \"createdAt\": \"{{ $json.body.timestamp }}\"\n}",
+        "jsonBody": "={\n  \"event_type\": \"{{ $json.body.event_type }}\",\n  \"event_id\": \"{{ $json.body.event_id }}\",\n  \"session_id\": \"{{ $json.body.session_id }}\",\n  \"timestamp\": \"{{ $json.body.timestamp }}\",\n  \"branch\": \"{{ $json.body.branch }}\",\n  \"branch_label\": \"{{ $json.body.branch_label }}\",\n  \"urgent\": \"{{ $json.body.urgent }}\",\n  \"tags\": \"{{ $json.body.tags }}\",\n  \"value_range\": \"{{ $json.body.value_range }}\",\n  \"answers\": \"{{ $json.body.answers }}\",\n  \"utm_source\": \"{{ $json.body.utm_source }}\",\n  \"utm_medium\": \"{{ $json.body.utm_medium }}\",\n  \"utm_campaign\": \"{{ $json.body.utm_campaign }}\",\n  \"consent_version\": \"{{ $json.body.consent_version }}\",\n  \"consent_timestamp\": \"{{ $json.body.consent_timestamp }}\",\n  \"channel\": \"{{ $json.body.channel }}\",\n  \"channel_user_id\": \"{{ $json.body.channel_user_id }}\",\n  \"name\": \"{{ $json.body.name }}\",\n  \"phone\": \"{{ $json.body.whatsapp }}\",\n  \"city\": \"{{ $json.body.city }}\",\n  \"state\": \"{{ $json.body.state }}\",\n  \"contact_period\": \"{{ $json.body.contact_period }}\",\n  \"destinationPhone\": \"5524992331416\",\n  \"advogada\": \"Dra. Ana Maria Magalhães\",\n  \"source\": \"Quiz Web Vercel\"\n}",
         "options": {}
       },
       "id": "node-pipez-crm-005",
@@ -155,7 +182,8 @@
       "position": [
         1050,
         380
-      ]
+      ],
+      "disabled": true
     }
   ],
   "connections": {
