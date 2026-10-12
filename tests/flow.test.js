@@ -7,10 +7,18 @@ const vm = require('node:vm');
 const root = path.resolve(__dirname, '..');
 const source = fs.readFileSync(path.join(root, 'quiz-flow.js'), 'utf8');
 
-function loadFlow() {
+function loadFlow({ webhookUrl = null, fetchImpl = null } = {}) {
     const storage = new Map();
     const elements = new Map();
     const networkCalls = [];
+    const timeoutCalls = [];
+    const intervalCalls = [];
+    const runtimeSource = webhookUrl
+        ? source.replace(
+            "const N8N_WEBHOOK_URL = 'https://n8n.seu-dominio.com/webhook/quiz-events';",
+            `const N8N_WEBHOOK_URL = ${JSON.stringify(webhookUrl)};`
+        )
+        : source;
     const element = () => ({
         style: {},
         dataset: {},
@@ -31,9 +39,15 @@ function loadFlow() {
         URLSearchParams,
         Date,
         Math,
-        setTimeout: () => 0,
+        setTimeout: (callback, delay) => {
+            timeoutCalls.push({ callback, delay });
+            return timeoutCalls.length;
+        },
         clearTimeout() {},
-        setInterval: () => 0,
+        setInterval: (callback, delay) => {
+            intervalCalls.push({ callback, delay });
+            return intervalCalls.length;
+        },
         clearInterval() {},
         sessionStorage: {
             getItem: key => storage.get(key) || null,
@@ -65,16 +79,16 @@ function loadFlow() {
             location: {},
             ResizeObserver: null
         },
-        fetch: async (url, options) => {
+        fetch: (url, options) => {
             networkCalls.push({ kind: 'fetch', url, options });
-            return { ok: true };
+            return fetchImpl ? fetchImpl(url, options) : Promise.resolve({ ok: true });
         }
     };
 
     vm.createContext(sandbox);
-    vm.runInContext(`${source}\n;globalThis.__quiz = {
+    vm.runInContext(`${runtimeSource}\n;globalThis.__quiz = {
         FLOW, state, applyRules, finishBranch, renderQuestion, answerQuestion,
-        showDismissal,
+        showDismissal, showAnalysis, handleLeadSubmit,
         toggleMultiSelect: typeof toggleMultiSelect === 'function' ? toggleMultiSelect : undefined,
         confirmMultiSelect: typeof confirmMultiSelect === 'function' ? confirmMultiSelect : undefined,
         getDismissalContent, isDismissedOutcome: typeof isDismissedOutcome === 'function' ? isDismissedOutcome : undefined,
@@ -86,7 +100,15 @@ function loadFlow() {
         sendAnalyticsEvent
     };`, sandbox);
 
-    return { api: sandbox.__quiz, elements, networkCalls };
+    return {
+        api: sandbox.__quiz,
+        elements,
+        getElement: id => sandbox.document.getElementById(id),
+        networkCalls,
+        timeoutCalls,
+        intervalCalls,
+        window: sandbox.window
+    };
 }
 
 function resetState(state, overrides = {}) {
@@ -266,7 +288,7 @@ test('payload de lead versiona consentimento e limita atribuição a UTMs', () =
     assert.equal(payload.origin, undefined);
 });
 
-test('analytics não inclui PII nem relato livre e reduz o referrer ao hostname', () => {
+test('analytics mantém somente os campos permitidos, sem PII ou relato livre', () => {
     const { api } = loadFlow();
     const { state, buildAnalyticsPayload } = api;
 
@@ -280,7 +302,10 @@ test('analytics não inclui PII nem relato livre e reduz o referrer ao hostname'
     const serialized = JSON.stringify(payload);
 
     assert.equal(payload.event_type, 'analytics');
-    assert.equal(payload.referrer_hostname, 'partner.example');
+    assert.deepEqual(Object.keys(payload).sort(), [
+        'branch', 'branch_label', 'event_id', 'event_type', 'session_id', 'tags', 'timestamp',
+        'urgent', 'utm_campaign', 'utm_medium', 'utm_source', 'value_range'
+    ]);
     for (const field of ['name', 'whatsapp', 'city', 'state', 'answers', 'nome', 'respostas']) assert.equal(Object.hasOwn(payload, field), false);
     assert.doesNotMatch(serialized, /Relato livre/);
 });
@@ -306,4 +331,39 @@ test('webhook placeholder não gera chamadas de rede e o handoff minimiza a mens
     assert.match(handoff, /Nome: Pessoa de teste/);
     assert.match(handoff, /Cidade\/UF: São Paulo\/SP/);
     assert.doesNotMatch(handoff, /Acima de R\$ 500 mil|Relato livre|respostas|Documentos/i);
+});
+
+test('submissão navega para o WhatsApp sem aguardar webhook que nunca resolve', () => {
+    const neverResolves = new Promise(() => {});
+    const { api, getElement, networkCalls, window } = loadFlow({
+        webhookUrl: 'https://events.example/webhook',
+        fetchImpl: () => neverResolves
+    });
+    const { state, handleLeadSubmit } = api;
+
+    resetState(state, { branch: 'empresa', tags: ['empresa'] });
+    getElement('nome').value = 'Pessoa de teste';
+    getElement('whatsapp').value = '(11) 99999-9999';
+    getElement('ddi').value = '+55';
+    getElement('cidade').value = 'São Paulo';
+    getElement('estado').value = 'sp';
+    getElement('horario').value = 'manha';
+    getElement('consentimento').checked = true;
+
+    handleLeadSubmit({ preventDefault() {} });
+
+    assert.equal(networkCalls.length, 1);
+    assert.match(window.location.href, /^https:\/\/wa\.me\/5524992331416\?text=/);
+});
+
+test('movimento reduzido pula análise temporizada e não inicia status rotativo', () => {
+    const { api, timeoutCalls, intervalCalls, elements } = loadFlow();
+    const { state, showAnalysis } = api;
+
+    resetState(state, { branch: 'empresa', outcome: 'qualificado', tags: ['empresa'] });
+    showAnalysis();
+
+    assert.deepEqual(timeoutCalls, []);
+    assert.deepEqual(intervalCalls, []);
+    assert.equal(elements.get('successTitle').textContent, 'Resultado apurado');
 });

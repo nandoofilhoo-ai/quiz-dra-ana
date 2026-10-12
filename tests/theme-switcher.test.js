@@ -91,20 +91,11 @@ test('entrega resultado qualitativo sem score, laudo ou promessa de prazo', () =
     assert.match(styles, /@media\s*\(prefers-reduced-motion:\s*reduce\)[\s\S]*?\.urgency-fill[\s\S]*?transition:\s*none/s);
 });
 
-test('tolera a ausência do bloco legado de laudo no resultado qualificado', () => {
-    assert.doesNotMatch(html, /id="laudoBox"/i);
-    assert.match(
-        flowSource,
-        /const laudoBox = document\.getElementById\('laudoBox'\);\s*if \(laudoBox\) \{\s*laudoBox\.style\.display = isLaudo \? 'block' : 'none';\s*\}/s
-    );
+test('integração não mantém referências de produção ao legado de laudo ou score', () => {
+    const forbidden = /oferta_laudo|qualificado_laudo|laudo_fechar|triagePercentage|animatePercentage|laudoBox/i;
 
-    const currentDocument = { getElementById: () => null };
-    assert.doesNotThrow(() => {
-        const laudoBox = currentDocument.getElementById('laudoBox');
-        if (laudoBox) {
-            laudoBox.style.display = 'none';
-        }
-    });
+    assert.doesNotMatch(html, forbidden);
+    assert.doesNotMatch(flowSource, forbidden);
 });
 
 test('mantém consentimento antes dos dados e limita contato a manhã ou tarde', () => {

@@ -316,6 +316,10 @@ function isDismissedOutcome(outcome) {
 function showAnalysis() {
     const progress = document.getElementById('progressBar');
     if (progress) progress.style.width = '100%';
+    if (prefersReducedMotion()) {
+        routeOutcome();
+        return;
+    }
     transitionToStep(document.getElementById('analysisStep'));
     const status = document.getElementById('analysisStatus');
     const messages = ['Lendo suas respostas', 'Organizando as informações', 'Preparando a orientação'];
@@ -447,13 +451,18 @@ function transitionToStep(target) {
     document.querySelectorAll('.quiz-step').forEach(step => {
         if (step !== current && step !== target) step.classList.remove('active', 'is-leaving');
     });
-    state.transitionTimer = setTimeout(() => {
+    const completeTransition = () => {
         if (current) current.classList.remove('is-leaving');
         target.classList.add('active');
         sendAutoHeight();
         const focus = target.querySelector('button, input, textarea');
         if (focus) focus.focus({ preventScroll: true });
-    }, 220);
+    };
+    if (prefersReducedMotion()) {
+        completeTransition();
+        return;
+    }
+    state.transitionTimer = setTimeout(completeTransition, 220);
 }
 
 function goToStep(step) {
@@ -511,11 +520,6 @@ function getUtmAttribution() {
     };
 }
 
-function getReferrerHostname() {
-    if (!document.referrer) return null;
-    try { return new URL(document.referrer).hostname || null; } catch (_) { return null; }
-}
-
 function getBranchMetadata() {
     const branch = FLOW[state.branch];
     return {
@@ -559,7 +563,6 @@ function buildAnalyticsPayload(step) {
         timestamp: new Date().toISOString(),
         ...metadata,
         tags,
-        referrer_hostname: getReferrerHostname(),
         ...getUtmAttribution()
     };
 }
@@ -623,7 +626,7 @@ async function handleLeadSubmit(event) {
         const label = button.querySelector('span');
         if (label) label.textContent = 'Encaminhando seus dados...';
     }
-    await sendEvent(buildLeadPayload(contact));
+    sendEvent(buildLeadPayload(contact)).catch(error => console.warn('Falha ao iniciar envio do evento:', error));
     window.location.href = buildWhatsappHandoff(contact);
 }
 
