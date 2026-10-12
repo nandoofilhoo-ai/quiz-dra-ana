@@ -75,6 +75,16 @@ test('mantém as dez entradas verticais com o mapa público PF e PJ aprovado', (
     assert.match(styles, /@media\s*\(max-width:\s*600px\)[\s\S]*?\.entry-options \.opt-arrow\s*\{[^}]*display:\s*none\s*;/s);
 });
 
+test('protege a contenção horizontal do Sculpted no mobile', () => {
+    const mobileBlock = themeStyles.match(/@media\s*\(max-width:\s*860px\)[\s\S]*?(?=@media\s*\(max-width:\s*600px\)|$)/)?.[0] || '';
+
+    assert.match(mobileBlock, /\.stage\s*\{[^}]*inline-size:\s*100%[^}]*max-inline-size:\s*100%/s);
+    assert.match(mobileBlock, /\.shell\s*\{[^}]*inline-size:\s*100%[^}]*max-inline-size:\s*100%/s);
+    assert.match(mobileBlock, /\.card\s*\{[^}]*min-inline-size:\s*0[^}]*overflow-x:\s*clip/s);
+    assert.match(mobileBlock, /\.body,[\s\S]*?\.opt-txt\s*\{[^}]*min-inline-size:\s*0[^}]*max-inline-size:\s*100%/s);
+    assert.match(mobileBlock, /\.opt-txt\s*\{[^}]*overflow-wrap:\s*anywhere/s);
+});
+
 test('entrega resultado qualitativo sem score, laudo ou promessa de prazo', () => {
     const text = visibleText(html);
 
