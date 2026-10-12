@@ -109,6 +109,8 @@ test('entrega score de prioridade, termômetro semafórico e cautela sem laudo',
     assert.doesNotMatch(text, /\bquiz\b/i);
     assert.doesNotMatch(html, /triagePercentage|laudoBox|laudo-option-box/i);
     assert.match(html, /id="scoreValue"/i);
+    assert.doesNotMatch(html, /class="authority-stat"[^>]+aria-live=/i);
+    assert.match(html, /id="scoreValue"[^>]+aria-label="Score de prioridade:/i);
     assert.match(html, /id="urgencyMarker"/i);
     assert.match(html, /data-level="yellow"/i);
     assert.match(html, /<section[^>]+id="urgencyIndicator"[^>]+aria-labelledby="urgencyLabel"/i);
