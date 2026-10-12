@@ -33,9 +33,9 @@ const FLOW = {
     processo: {
         label: 'Banco me processou', type: 'empresa_ou_pessoa', icon: 'process', valueQuestion: 1,
         questions: [
-            ['Como você recebeu a comunicação do processo?', [['Oficial de justiça', 'oficial'], ['Carta dos Correios', 'carta'], ['WhatsApp', 'whatsapp'], ['Não sei', 'nao_sei']]],
+            ['Como você recebeu a comunicação do processo?', [['Oficial de justiça', 'oficial'], ['Carta dos Correios', 'carta'], ['WhatsApp', 'whatsapp'], ['Outro meio', 'outro_meio'], ['Não sei', 'nao_sei']]],
             ['Qual o valor que o banco está cobrando?', VALUE_OPTIONS],
-            ['Quais bens ou valores podem estar em risco?', [['Imóvel onde moro', 'moradia'], ['Outros imóveis', 'imoveis'], ['Veículos', 'veiculos'], ['Dinheiro ou recebíveis', 'dinheiro_recebiveis'], ['Não sei', 'nao_sei']], { multiple: true, confirmLabel: 'Confirmar bens em risco' }]
+            ['Quais bens ou valores podem estar em risco?', [['Conta', 'conta'], ['Imóvel', 'imovel'], ['Veículo', 'veiculo'], ['Recebíveis', 'recebiveis'], ['Salário/dinheiro', 'salario_dinheiro'], ['Não sei', 'nao_sei']], { multiple: true, confirmLabel: 'Confirmar bens em risco' }]
         ],
         result: 'Entendi. O processo será encaminhado para análise inicial com prioridade.',
         docs: 'Comunicação recebida, contrato da dívida e documentos dos bens ou valores envolvidos'
@@ -88,7 +88,7 @@ const FLOW = {
     imovel: {
         label: 'Financiamento imobiliário', type: 'empresa_ou_pessoa', icon: 'home', valueQuestion: 4,
         questions: [
-            ['Como estão as parcelas?', [['Em dia, mas ficaram insustentáveis', 'em_dia_insustentavel'], ['1 ou 2 em atraso', '1_2'], ['3 ou mais em atraso', '3_mais'], ['Não sei', 'nao_sei']]],
+            ['Como estão as parcelas?', [['Em dia, mas insustentáveis', 'em_dia_insustentavel'], ['Atrasadas', 'atrasadas'], ['Renegociadas', 'renegociadas'], ['Não sei', 'nao_sei']]],
             ['Que aviso foi recebido?', [['Nenhum', 'nenhum'], ['Cobrança', 'cobranca'], ['Cartório', 'cartorio'], ['Leilão', 'leilao'], ['Já foi a leilão', 'ja_leilao'], ['Não sei', 'nao_sei']]],
             ['Quem financiou?', [['Caixa', 'caixa'], ['Outro banco', 'banco'], ['Construtora/incorporadora', 'construtora'], ['Não sei', 'nao_sei']]],
             ['Qual o uso do imóvel?', [['Moradia', 'moradia'], ['Investimento', 'investimento'], ['Comercial', 'comercial'], ['Não sei', 'nao_sei']]],

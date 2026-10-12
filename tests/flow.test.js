@@ -132,9 +132,9 @@ test('processo usa comunicação, faixa e bens sob risco sem reduzir a urgência
     const { FLOW, state, applyRules, finishBranch } = api;
 
     assert.deepEqual(JSON.parse(JSON.stringify(FLOW.processo.questions.map(([question, options]) => [question, options.map(([label]) => label)]))), [
-        ['Como você recebeu a comunicação do processo?', ['Oficial de justiça', 'Carta dos Correios', 'WhatsApp', 'Não sei']],
+        ['Como você recebeu a comunicação do processo?', ['Oficial de justiça', 'Carta dos Correios', 'WhatsApp', 'Outro meio', 'Não sei']],
         ['Qual o valor que o banco está cobrando?', ['Até R$ 50 mil', 'R$ 50 a 100 mil', 'R$ 100 a 300 mil', 'R$ 300 a 500 mil', 'Acima de R$ 500 mil', 'Não sei']],
-        ['Quais bens ou valores podem estar em risco?', ['Imóvel onde moro', 'Outros imóveis', 'Veículos', 'Dinheiro ou recebíveis', 'Não sei']]
+        ['Quais bens ou valores podem estar em risco?', ['Conta', 'Imóvel', 'Veículo', 'Recebíveis', 'Salário/dinheiro', 'Não sei']]
     ]);
 
     resetState(state, { branch: 'processo', tags: ['processo'] });
@@ -160,15 +160,15 @@ test('bens em risco são a única pergunta multisseleção e exigem confirmaçã
     assert.match(elements.get('step2Options').innerHTML, /type="checkbox"/);
     assert.match(elements.get('step2Options').innerHTML, /Confirmar bens em risco/);
 
-    toggleMultiSelect('Imóvel onde moro', 'moradia', true);
-    toggleMultiSelect('Veículos', 'veiculos', true);
+    toggleMultiSelect('Imóvel', 'imovel', true);
+    toggleMultiSelect('Veículo', 'veiculo', true);
     confirmMultiSelect();
 
     assert.equal(state.questionIndex, 3);
     assert.deepEqual(JSON.parse(JSON.stringify(state.answers[0])), {
         question: 'Quais bens ou valores podem estar em risco?',
-        answer: 'Imóvel onde moro; Veículos',
-        value: ['moradia', 'veiculos']
+        answer: 'Imóvel; Veículo',
+        value: ['imovel', 'veiculo']
     });
 });
 
@@ -199,7 +199,7 @@ test('financiamento imobiliário aceita parcela em dia que se tornou insustentá
 
     assert.equal(api.FLOW.imovel.label, 'Financiamento imobiliário');
     assert.equal(firstQuestion[0], 'Como estão as parcelas?');
-    assert.deepEqual(JSON.parse(JSON.stringify(firstQuestion[1].map(([label]) => label))), ['Em dia, mas ficaram insustentáveis', '1 ou 2 em atraso', '3 ou mais em atraso', 'Não sei']);
+    assert.deepEqual(JSON.parse(JSON.stringify(firstQuestion[1].map(([label]) => label))), ['Em dia, mas insustentáveis', 'Atrasadas', 'Renegociadas', 'Não sei']);
 });
 
 test('golpe só dispensa dinâmicas conhecidas fora da falsa central com PIX', () => {
