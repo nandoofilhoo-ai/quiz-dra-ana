@@ -46,7 +46,7 @@ Arquivo de acompanhamento vivo. Um item só é marcado como concluído quando ex
 - [x] Referências visíveis substituídas por “formulário”.
 - [x] Tela “Resultado apurado”, indicador qualitativo de urgência e texto de cautela para prazo implementados.
 - [x] Preferência de contato limitada a manhã ou tarde.
-- [x] Regras de triagem reconciliadas e cobertas por testes foram implementadas no frontend: processo, bloqueio, financiamento, golpe PIX, exterior, consentimento e dispensas confirmadas.
+- [x] Regras consolidadas de triagem implementadas e cobertas por testes: processo, bloqueio, financiamento, golpe PIX, exterior, consentimento e dispensas confirmadas.
 - [-] Reconciliar as demais etapas do formulário com `docs/manychat-flow-spec.md`; não considerar toda a especificação implementada até essa conferência ponta a ponta.
 - [x] Caminhos executáveis de laudo removidos; dispensas confirmadas não coletam contato.
 - [x] Consentimento versionado e UTMs minimizadas implementados conforme `docs/event-contract.md`.
@@ -63,7 +63,7 @@ Arquivo de acompanhamento vivo. Um item só é marcado como concluído quando ex
 - [x] Testes atualizados para nomenclaturas, urgência, exterior, financiamento e ausência de laudo.
 - [x] Suíte automatizada, validação sintática e checagem de diff executadas nesta fase.
 - [x] Comportamento de casos dispensados sem captura de contato validado por testes.
-- [-] Validação visual manual responsiva/mobile em correção; não considerar concluída nesta fase.
+- [x] Validação visual responsiva em 390 × 844 e desktop concluída; textos permanecem legíveis, sem clipping ou rolagem horizontal.
 - [ ] Entregar configuração das automações sociais somente depois dos acessos e permissões da cliente.
 
 ## Nomenclaturas históricas substituídas
@@ -87,4 +87,4 @@ Os termos abaixo só podem aparecer em histórico ou auditoria; não são requis
 | 2026-10-11 | Aprovação visual da cliente | Concluído | A cliente escolheu `Sculpted Bordeaux`; o visual foi fixado no formulário e o seletor removido. |
 | 2026-10-11 | Consolidação da reunião de 09/10 | Concluído | Nomenclaturas, urgência, laudo, integrações e automações sociais consolidados sem inventar pendências comerciais. |
 | 2026-10-11 | Contratos da primeira fase | Concluído | `docs/event-contract.md` e `docs/social-automation-spec.md` criados; integrações externas permanecem adiadas/bloqueadas. |
-| 2026-10-11 | Fechamento documental e QA automatizado | Concluído | Regras de triagem cobertas por testes e template n8n validados localmente; reconciliação integral da especificação, ManyChat, TikTok, deploy e integrações remotas permanecem pendentes. |
+| 2026-10-11 | Fechamento documental e QA automatizado | Concluído | Regras consolidadas, responsividade e template n8n validados localmente; ManyChat, TikTok, deploy e integrações remotas permanecem pendentes. |
