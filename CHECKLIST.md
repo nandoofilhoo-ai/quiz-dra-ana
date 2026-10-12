@@ -44,10 +44,10 @@ Arquivo de acompanhamento vivo. Um item só é marcado como concluído quando ex
 - [x] Visual `Sculpted Bordeaux` fixado como padrão; seletor de apresentação removido.
 - [x] Opções iniciais em lista vertical com marcadores de público `PF`/`PJ`.
 - [x] Referências visíveis substituídas por “formulário”.
-- [x] Tela “Resultado apurado”, indicador qualitativo de urgência e texto de cautela para prazo implementados.
+- [x] Tela “Análise concluída” com score visual de prioridade, termômetro semafórico, marcador proporcional e texto de cautela para prazo implementados.
 - [x] Preferência de contato limitada a manhã ou tarde.
 - [x] Regras consolidadas de triagem implementadas e cobertas por testes: processo, bloqueio, financiamento, golpe PIX, exterior, consentimento e dispensas confirmadas.
-- [-] Reconciliar as demais etapas do formulário com `docs/manychat-flow-spec.md`; não considerar toda a especificação implementada até essa conferência ponta a ponta.
+- [x] Etapas do formulário reconciliadas com `docs/manychat-flow-spec.md`, incluindo processo, financiamento, bloqueio, dispensas e contato após devolutiva.
 - [x] Caminhos executáveis de laudo removidos; dispensas confirmadas não coletam contato.
 - [x] Consentimento versionado e UTMs minimizadas implementados conforme `docs/event-contract.md`.
 
@@ -88,3 +88,4 @@ Os termos abaixo só podem aparecer em histórico ou auditoria; não são requis
 | 2026-10-11 | Consolidação da reunião de 09/10 | Concluído | Nomenclaturas, urgência, laudo, integrações e automações sociais consolidados sem inventar pendências comerciais. |
 | 2026-10-11 | Contratos da primeira fase | Concluído | `docs/event-contract.md` e `docs/social-automation-spec.md` criados; integrações externas permanecem adiadas/bloqueadas. |
 | 2026-10-11 | Fechamento documental e QA automatizado | Concluído | Regras consolidadas, responsividade e template n8n validados localmente; ManyChat, TikTok, deploy e integrações remotas permanecem pendentes. |
+| 2026-10-12 | Score e termômetro de urgência | Concluído | Score visual 52/84, animação, marcador semafórico e título “Análise concluída” validados; não altera dispensa, payload ou promessa jurídica. |

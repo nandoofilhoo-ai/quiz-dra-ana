@@ -93,6 +93,8 @@ function loadFlow({ webhookUrl = null, fetchImpl = null } = {}) {
         confirmMultiSelect: typeof confirmMultiSelect === 'function' ? confirmMultiSelect : undefined,
         getDismissalContent, isDismissedOutcome: typeof isDismissedOutcome === 'function' ? isDismissedOutcome : undefined,
         updateUrgencyIndicator: typeof updateUrgencyIndicator === 'function' ? updateUrgencyIndicator : undefined,
+        calculatePriorityScore: typeof calculatePriorityScore === 'function' ? calculatePriorityScore : undefined,
+        animateScore: typeof animateScore === 'function' ? animateScore : undefined,
         buildLeadWhatsapp, buildLeadPayload: typeof buildLeadPayload === 'function' ? buildLeadPayload : undefined,
         buildAnalyticsPayload: typeof buildAnalyticsPayload === 'function' ? buildAnalyticsPayload : undefined,
         buildWhatsappHandoff: typeof buildWhatsappHandoff === 'function' ? buildWhatsappHandoff : undefined,
@@ -258,6 +260,22 @@ test('indicador de urgência usa os IDs do resultado e atualiza sem animação r
     assert.equal(elements.get('urgencyFill').style.transition, 'none');
 });
 
+test('score de prioridade alimenta o termômetro sem usar valor como promessa jurídica', () => {
+    const { api, elements } = loadFlow();
+
+    assert.equal(typeof api.calculatePriorityScore, 'function');
+    assert.equal(api.calculatePriorityScore(false), 52);
+    assert.equal(api.calculatePriorityScore(true), 84);
+
+    api.updateUrgencyIndicator(84);
+
+    assert.equal(elements.get('scoreValue').textContent, '84');
+    assert.equal(elements.get('scoreValue').getAttribute('aria-label'), 'Score de prioridade: 84 de 100');
+    assert.equal(elements.get('urgencyFill').style.width, '84%');
+    assert.equal(elements.get('urgencyMarker').style.left, '84%');
+    assert.equal(elements.get('urgencyIndicator').dataset.level, 'red');
+});
+
 test('payload de lead versiona consentimento e limita atribuição a UTMs', () => {
     const { api } = loadFlow();
     const { state, buildLeadPayload } = api;
@@ -365,5 +383,6 @@ test('movimento reduzido pula análise temporizada e não inicia status rotativo
 
     assert.deepEqual(timeoutCalls, []);
     assert.deepEqual(intervalCalls, []);
-    assert.equal(elements.get('successTitle').textContent, 'Resultado apurado');
+    assert.equal(elements.get('successTitle').textContent, 'Análise concluída');
+    assert.equal(elements.get('scoreValue').textContent, '52');
 });

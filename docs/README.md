@@ -6,6 +6,7 @@ Esta pasta reúne o contexto operacional do funil de triagem da Dra. Ana Maria d
 
 - O formulário web usa o visual aprovado `Sculpted Bordeaux`; o seletor de variações foi removido.
 - O frontend cobre e testa as regras consolidadas de triagem, incluindo as opções completas de processo e financiamento, devolutiva antes da captura de contato e dispensas confirmadas sem coleta.
+- A tela de devolutiva exibe um score visual de prioridade (52 para análise inicial e 84 para atenção prioritária) com termômetro semafórico; esse número é apenas apresentação da triagem, não é probabilidade, promessa de resultado ou critério automático de dispensa.
 - `n8n_workflow.json` é um template local inativo. Os nós que escrevem dados estão desabilitados, incluindo o nó CRM, sem endpoint ou token literal.
 - Laudo, CRM, GA4/GTM e domínio permanecem adiados.
 - Publicação, deploy público e configuração remota de automações não foram realizados nem verificados nesta fase.

@@ -1922,7 +1922,31 @@ body {
 
 @media (max-width: 600px) {
     .success-step {
+        inline-size: 100%;
+        min-inline-size: 0;
+        max-inline-size: 100%;
         padding-top: 0.9rem;
+    }
+
+    .authority-card,
+    .authority-stat,
+    .urgency-indicator,
+    .contact-intro,
+    .success-step #leadForm {
+        box-sizing: border-box;
+        inline-size: 100%;
+        min-inline-size: 0;
+        max-inline-size: 100%;
+    }
+
+    .urgency-status,
+    .urgency-deadline {
+        overflow-wrap: anywhere;
+    }
+
+    .authority-stat span,
+    .authority-stat small {
+        overflow-wrap: anywhere;
     }
 
     .success-hero .q-title {

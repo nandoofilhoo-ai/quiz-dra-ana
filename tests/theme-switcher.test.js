@@ -96,19 +96,30 @@ test('não mascara nem trunca a cópia dos cards no mobile', () => {
     assert.doesNotMatch(themeStyles, /\.opt-txt[^}]*text-overflow:\s*ellipsis/i);
 });
 
-test('entrega resultado qualitativo sem score, laudo ou promessa de prazo', () => {
+test('mantém resultado, termômetro e formulário dentro da largura mobile', () => {
+    assert.match(styles, /@media\s*\(max-width:\s*600px\)[\s\S]*?\.success-step\s*\{[^}]*min-inline-size:\s*0[^}]*max-inline-size:\s*100%/s);
+    assert.match(styles, /@media\s*\(max-width:\s*600px\)[\s\S]*?\.authority-card,[\s\S]*?\.success-step #leadForm\s*\{[^}]*box-sizing:\s*border-box/s);
+    assert.match(styles, /@media\s*\(max-width:\s*600px\)[\s\S]*?\.urgency-status,[\s\S]*?\.urgency-deadline\s*\{[^}]*overflow-wrap:\s*anywhere/s);
+});
+
+test('entrega score de prioridade, termômetro semafórico e cautela sem laudo', () => {
     const text = visibleText(html);
 
-    assert.match(text, /Resultado apurado/i);
+    assert.match(text, /Análise concluída/i);
     assert.doesNotMatch(text, /\bquiz\b/i);
     assert.doesNotMatch(html, /triagePercentage|laudoBox|laudo-option-box/i);
-    assert.doesNotMatch(text, /\d+(?:[,.]\d+)?\s*%/);
+    assert.match(html, /id="scoreValue"/i);
+    assert.match(html, /id="urgencyMarker"/i);
+    assert.match(html, /data-level="yellow"/i);
     assert.match(html, /<section[^>]+id="urgencyIndicator"[^>]+aria-labelledby="urgencyLabel"/i);
-    assert.match(html, /id="urgencyTrack"[^>]+aria-hidden="true"/i);
+    assert.match(html, /id="urgencyTrack"[^>]+aria-label="Termômetro de urgência"/i);
     assert.match(html, /id="urgencyFill"/i);
+    assert.match(text, /Falta pouco\.\.\./i);
     assert.match(html, /id="urgencyDeadlineNote"[^>]+hidden[^>]*>\s*Seu prazo pode já estar correndo\./i);
     assert.match(text, /não garante resultado ou atendimento em prazo determinado/i);
-    assert.match(styles, /\.urgency-fill\s*\{[^}]*background:\s*var\(--burgundy\)/s);
+    assert.match(styles, /\.urgency-track\s*\{[\s\S]*?linear-gradient\([^)]*#6[0-9a-f]{5}[^)]*#d[0-9a-f]{5}[^)]*#9[0-9a-f]{5}/i);
+    assert.match(styles, /\.urgency-marker\s*\{/s);
+    assert.match(styles, /\.score-value\s*\{/s);
     assert.match(styles, /@media\s*\(prefers-reduced-motion:\s*reduce\)[\s\S]*?\.urgency-fill[\s\S]*?transition:\s*none/s);
 });
 
