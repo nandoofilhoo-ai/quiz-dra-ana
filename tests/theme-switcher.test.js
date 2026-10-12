@@ -6,6 +6,7 @@ const vm = require('node:vm');
 
 const root = path.resolve(__dirname, '..');
 const themeSource = fs.readFileSync(path.join(root, 'theme-switcher.js'), 'utf8');
+const flowSource = fs.readFileSync(path.join(root, 'quiz-flow.js'), 'utf8');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const styles = fs.readFileSync(path.join(root, 'style.css'), 'utf8');
 const themeStyles = fs.readFileSync(path.join(root, 'themes.css'), 'utf8');
@@ -88,6 +89,22 @@ test('entrega resultado qualitativo sem score, laudo ou promessa de prazo', () =
     assert.match(text, /não garante resultado ou atendimento em prazo determinado/i);
     assert.match(styles, /\.urgency-fill\s*\{[^}]*background:\s*var\(--burgundy\)/s);
     assert.match(styles, /@media\s*\(prefers-reduced-motion:\s*reduce\)[\s\S]*?\.urgency-fill[\s\S]*?transition:\s*none/s);
+});
+
+test('tolera a ausência do bloco legado de laudo no resultado qualificado', () => {
+    assert.doesNotMatch(html, /id="laudoBox"/i);
+    assert.match(
+        flowSource,
+        /const laudoBox = document\.getElementById\('laudoBox'\);\s*if \(laudoBox\) \{\s*laudoBox\.style\.display = isLaudo \? 'block' : 'none';\s*\}/s
+    );
+
+    const currentDocument = { getElementById: () => null };
+    assert.doesNotThrow(() => {
+        const laudoBox = currentDocument.getElementById('laudoBox');
+        if (laudoBox) {
+            laudoBox.style.display = 'none';
+        }
+    });
 });
 
 test('mantém consentimento antes dos dados e limita contato a manhã ou tarde', () => {

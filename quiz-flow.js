@@ -478,7 +478,10 @@ function showQualifiedResult(isLaudo = false) {
     const ddiInput = document.getElementById('ddi');
     if (ddiControl) ddiControl.hidden = state.branch !== 'exterior';
     if (ddiInput) ddiInput.value = '+55';
-    document.getElementById('laudoBox').style.display = isLaudo ? 'block' : 'none';
+    const laudoBox = document.getElementById('laudoBox');
+    if (laudoBox) {
+        laudoBox.style.display = isLaudo ? 'block' : 'none';
+    }
     document.getElementById('progressWrap').style.display = 'block';
     document.getElementById('progressBar').style.width = '100%';
     transitionToStep(document.getElementById('step4'));
