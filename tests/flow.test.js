@@ -5,269 +5,305 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 const root = path.resolve(__dirname, '..');
-const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const source = fs.readFileSync(path.join(root, 'quiz-flow.js'), 'utf8');
 
 function loadFlow() {
     const storage = new Map();
-    const animationFrames = [];
+    const elements = new Map();
+    const networkCalls = [];
     const element = () => ({
         style: {},
+        dataset: {},
         classList: { add() {}, remove() {} },
         querySelector() { return null; },
         focus() {},
+        setAttribute(name, value) { this[name] = String(value); },
         offsetHeight: 600,
-        textContent: ''
+        textContent: '',
+        innerHTML: '',
+        hidden: false,
+        disabled: false
     });
-    const elements = new Map();
     const sandbox = {
         console,
         Blob,
+        URL,
         URLSearchParams,
+        Date,
+        Math,
         setTimeout: () => 0,
         clearTimeout() {},
         setInterval: () => 0,
         clearInterval() {},
-        performance: { now: () => 0 },
-        requestAnimationFrame: callback => {
-            animationFrames.push(callback);
-            return animationFrames.length;
-        },
         sessionStorage: {
             getItem: key => storage.get(key) || null,
             setItem: (key, value) => storage.set(key, value)
         },
         document: {
+            referrer: 'https://partner.example/campaign?lead=private',
             addEventListener() {},
             getElementById(id) {
                 if (!elements.has(id)) elements.set(id, element());
                 return elements.get(id);
             },
-            querySelector() { return null; },
+            querySelector(selector) {
+                if (selector === '.contact-intro') return this.getElementById('contactIntro');
+                return null;
+            },
             querySelectorAll() { return []; }
         },
-        navigator: {},
-        location: { search: '' },
+        navigator: {
+            sendBeacon(url, data) {
+                networkCalls.push({ kind: 'beacon', url, data });
+                return true;
+            }
+        },
+        location: { search: '?utm_source=google&utm_medium=cpc&utm_campaign=outubro' },
         window: {
-            matchMedia: () => ({ matches: true })
+            matchMedia: () => ({ matches: true }),
+            parent: { postMessage() {} },
+            location: {},
+            ResizeObserver: null
+        },
+        fetch: async (url, options) => {
+            networkCalls.push({ kind: 'fetch', url, options });
+            return { ok: true };
         }
     };
+
     vm.createContext(sandbox);
     vm.runInContext(`${source}\n;globalThis.__quiz = {
-        FLOW, state, applyRules, finishBranch,
-        buildLeadWhatsapp: typeof buildLeadWhatsapp === 'function' ? buildLeadWhatsapp : undefined,
-        getAuthorityContent: typeof getAuthorityContent === 'function' ? getAuthorityContent : undefined,
-        getTriagePercentage: typeof getTriagePercentage === 'function' ? getTriagePercentage : undefined,
-        animatePercentage: typeof animatePercentage === 'function' ? animatePercentage : undefined,
-        getDismissalContent: typeof getDismissalContent === 'function' ? getDismissalContent : undefined
+        FLOW, state, applyRules, finishBranch, renderQuestion, answerQuestion,
+        showDismissal,
+        toggleMultiSelect: typeof toggleMultiSelect === 'function' ? toggleMultiSelect : undefined,
+        confirmMultiSelect: typeof confirmMultiSelect === 'function' ? confirmMultiSelect : undefined,
+        getDismissalContent, isDismissedOutcome: typeof isDismissedOutcome === 'function' ? isDismissedOutcome : undefined,
+        updateUrgencyIndicator: typeof updateUrgencyIndicator === 'function' ? updateUrgencyIndicator : undefined,
+        buildLeadWhatsapp, buildLeadPayload: typeof buildLeadPayload === 'function' ? buildLeadPayload : undefined,
+        buildAnalyticsPayload: typeof buildAnalyticsPayload === 'function' ? buildAnalyticsPayload : undefined,
+        buildWhatsappHandoff: typeof buildWhatsappHandoff === 'function' ? buildWhatsappHandoff : undefined,
+        sendEvent: typeof sendEvent === 'function' ? sendEvent : undefined,
+        sendAnalyticsEvent
     };`, sandbox);
-    sandbox.__quiz.animationFrames = animationFrames;
-    return sandbox.__quiz;
+
+    return { api: sandbox.__quiz, elements, networkCalls };
 }
 
-const { FLOW, state, applyRules, finishBranch, buildLeadWhatsapp, getAuthorityContent, getTriagePercentage, animatePercentage, animationFrames, getDismissalContent } = loadFlow();
+function resetState(state, overrides = {}) {
+    Object.assign(state, {
+        branch: null,
+        questionIndex: 0,
+        answers: [],
+        tags: [],
+        urgent: false,
+        personType: null,
+        valueCode: null,
+        valueLabel: null,
+        outcome: null,
+        selectedOptions: [],
+        ...overrides
+    });
+}
 
-const documented = {
-    processo: [
-        ['O que você recebeu?', ['Cobrança para pagar em poucos dias', 'Aviso de penhora ou bloqueio', 'Aviso de leilão', 'Não sei, recebi um papel do oficial']],
-        ['Quando você recebeu?', ['Hoje ou ontem', 'Há menos de 15 dias', 'Há mais de 15 dias', 'Não lembro']],
-        ['Essa dívida é de quem?', ['Da minha empresa', 'Minha, pessoal', 'Sou avalista ou fiador']],
+test('processo usa comunicação, faixa e bens sob risco sem reduzir a urgência', () => {
+    const { api } = loadFlow();
+    const { FLOW, state, applyRules, finishBranch } = api;
+
+    assert.deepEqual(JSON.parse(JSON.stringify(FLOW.processo.questions.map(([question, options]) => [question, options.map(([label]) => label)]))), [
+        ['Como você recebeu a comunicação do processo?', ['Oficial de justiça', 'Carta dos Correios', 'WhatsApp', 'Não sei']],
         ['Qual o valor que o banco está cobrando?', ['Até R$ 50 mil', 'R$ 50 a 100 mil', 'R$ 100 a 300 mil', 'R$ 300 a 500 mil', 'Acima de R$ 500 mil', 'Não sei']],
-        ['Você já tem advogado cuidando desse processo?', ['Não tenho', 'Tenho, mas quero outra opinião', 'Tenho']]
-    ],
-    bloqueio: [
-        ['Quem bloqueou a conta?', ['A Justiça, por causa de um processo', 'O próprio banco, sem explicar', 'Não sei']],
-        ['Quando foi o bloqueio?', ['Hoje ou ontem', 'Nesta semana', 'Há mais de uma semana']],
-        ['Quanto ficou bloqueado?', ['Até R$ 20 mil', 'R$ 20 a 100 mil', 'R$ 100 a 500 mil', 'Acima de R$ 500 mil', 'Não sei']],
-        ['Esse dinheiro era para quê?', ['Folha de pagamento', 'Fornecedores e impostos', 'Reserva da empresa', 'Outro']],
-        ['O bloqueio veio de uma dívida com banco?', ['Sim', 'Não, é de outra origem', 'Não sei']]
-    ],
-    recebiveis: [
-        ['O que o banco está segurando?', ['Vendas da maquininha', 'Duplicatas ou boletos', 'Aplicação ou saldo travado', 'Não sei']],
-        ['Isso está ligado a qual dívida?', ['Capital de giro', 'Antecipação de recebíveis', 'Cheque especial ou conta garantida', 'Não sei']],
-        ['Quanto do faturamento fica retido?', ['Menos de 30%', 'De 30% a 60%', 'Mais de 60%', 'Praticamente tudo']],
-        ['Como estão as parcelas dessa dívida?', ['Em dia', 'Atrasadas', 'Já renegociei e não consigo pagar']],
-        ['Qual o valor total da dívida?', ['Até R$ 50 mil', 'R$ 50 a 100 mil', 'R$ 100 a 300 mil', 'R$ 300 a 500 mil', 'Acima de R$ 500 mil', 'Não sei']]
-    ],
-    empresa: [
-        ['Qual dívida mais pesa hoje?', ['Pronampe ou FGI', 'Capital de giro', 'Cheque especial', 'Cartão da empresa', 'Mais de uma']],
-        ['Qual é a situação agora?', ['Em dia, mas sufocando o caixa', 'Parcelas atrasadas', 'Já renegociei e não consigo pagar', 'Banco negativou ou protestou', 'Acho os juros altos demais']],
-        ['Somando tudo, quanto a empresa deve aos bancos?', ['Até R$ 50 mil', 'R$ 50 a 100 mil', 'R$ 100 a 300 mil', 'R$ 300 a 500 mil', 'Acima de R$ 500 mil', 'Não sei']],
-        ['O que foi dado em garantia?', ['Aval dos sócios', 'Imóvel ou veículo', 'Recebíveis da empresa', 'Só o fundo garantidor', 'Não sei']],
-        ['A empresa continua funcionando?', ['Sim, faturando normalmente', 'Sim, mas faturando pouco', 'Está parada']]
-    ],
-    avalista: [
-        ['Qual é a sua situação?', ['Sou avalista de dívida da empresa', 'Sou sócio de empresa que deve', 'Saí da sociedade e ainda me cobram', 'Fui avalista de outra pessoa']],
-        ['O que já aconteceu com você?', ['Só cobranças do banco', 'Meu nome foi negativado', 'Recebi um processo', 'Bloquearam conta ou bem meu']],
-        ['Qual o valor da dívida?', ['Até R$ 50 mil', 'R$ 50 a 100 mil', 'R$ 100 a 300 mil', 'R$ 300 a 500 mil', 'Acima de R$ 500 mil', 'Não sei']],
-        ['O que você teme perder?', ['O imóvel onde moro', 'Outros imóveis', 'Veículos', 'Salário ou dinheiro em conta', 'Não sei']],
-        ['A empresa ainda está ativa?', ['Sim', 'Está parada', 'Já foi encerrada']]
-    ],
-    imovel: [
-        ['Quantas parcelas estão em atraso?', ['1 ou 2', '3 ou mais', 'Perdi a conta']],
-        ['Você já recebeu algum aviso?', ['Nenhum', 'Cobrança do banco', 'Notificação do cartório', 'Aviso de leilão', 'O imóvel já foi a leilão']],
-        ['Com quem é o financiamento?', ['Caixa', 'Outro banco', 'Construtora ou incorporadora']],
-        ['Esse imóvel é:', ['Onde eu moro', 'Um investimento', 'Comercial']],
-        ['Quanto falta pagar do financiamento?', ['Até R$ 50 mil', 'R$ 50 a 100 mil', 'R$ 100 a 300 mil', 'R$ 300 a 500 mil', 'Acima de R$ 500 mil', 'Não sei']]
-    ],
-    servidor: [
-        ['Qual é o seu vínculo?', ['Federal', 'Estadual', 'Municipal', 'Militar', 'Aposentado ou pensionista']],
-        ['Qual é a sua renda bruta mensal, mais ou menos?', ['Até R$ 10 mil', 'R$ 10 a 20 mil', 'R$ 20 a 30 mil', 'Acima de R$ 30 mil']],
-        ['Que tipo de dívida mais pesa?', ['Consignado em folha', 'Empréstimo debitado na conta', 'Cartão consignado', 'Cartão e cheque especial', 'Várias ao mesmo tempo']],
-        ['Há quanto tempo você está no serviço público?', ['Menos de 5 anos', 'De 5 a 10 anos', 'Mais de 10 anos']],
-        ['Há quanto tempo você tem empréstimos e vem renovando ou refinanciando?', ['Há menos de 5 anos', 'De 5 a 10 anos', 'Há mais de 10 anos']]
-    ],
-    golpe: [
-        ['Como aconteceu?', ['Ligaram como se fossem do banco e fiz um PIX', 'Pediram para instalar um aplicativo', 'Fizeram empréstimo no meu nome na ligação', 'Foi outro tipo de golpe']],
-        ['Qual foi o prejuízo?', ['Até R$ 30 mil', 'R$ 30 a 50 mil', 'R$ 50 a 100 mil', 'Acima de R$ 100 mil']],
-        ['Quando aconteceu?', ['Nos últimos dias', 'No último mês', 'De 1 a 3 meses atrás', 'Há mais de 3 meses']],
-        ['O que você já fez?', ['Boletim de ocorrência e reclamação no banco', 'Só uma das duas coisas', 'Ainda nada']],
-        ['O que o banco respondeu?', ['Negou a devolução', 'Ainda não respondeu', 'Devolveu uma parte', 'Devolveu tudo']]
-    ],
-    outro: [
-        ['O problema é com:', ['Dívida da empresa', 'Dívida pessoal', 'Outro assunto com banco']],
-        ['Existe processo, bloqueio ou prazo correndo?', ['Sim', 'Não', 'Não sei']],
-        ['Conte em uma ou duas frases o que está acontecendo.', []]
-    ]
-};
+        ['Quais bens ou valores podem estar em risco?', ['Imóvel onde moro', 'Outros imóveis', 'Veículos', 'Dinheiro ou recebíveis', 'Não sei']]
+    ]);
 
-test('as nove ramificações reproduzem perguntas e respostas do documento', () => {
-    for (const [branch, expectedQuestions] of Object.entries(documented)) {
-        const actual = JSON.parse(JSON.stringify(FLOW[branch].questions.map(([question, options]) => [question, options.map(([label]) => label)])));
-        assert.deepEqual(actual, expectedQuestions, branch);
-    }
-});
-
-test('as devolutivas dos nove ramos são as documentadas', () => {
-    const expected = {
-        processo: 'Entendi. Quando o banco entra na Justiça, os prazos de defesa são curtos e começam a contar do recebimento. O seu caso vai para análise com prioridade.',
-        bloqueio: 'Entendi. Bloqueio de conta pode parar a empresa, e existem medidas para pedir a liberação conforme a origem do dinheiro. O seu caso vai para análise com prioridade.',
-        recebiveis: 'Entendi. A retenção de recebíveis depende do que está escrito no contrato, e isso pode ser revisto. Um advogado vai analisar o seu contrato.',
-        empresa: 'Entendi. Dívidas bancárias de empresa costumam ter encargos e garantias que podem ser discutidos. Um advogado vai analisar os seus contratos antes de indicar o caminho.',
-        avalista: 'Entendi. A responsabilidade de sócios e avalistas tem limites que dependem do que foi assinado. Um advogado vai analisar os documentos do seu caso.',
-        imovel: 'Entendi. No financiamento de imóvel existem etapas e prazos antes do leilão, e o momento em que você está muda o que pode ser feito. O seu caso vai para análise.',
-        servidor: 'Entendi. Renovações sucessivas de empréstimo ao longo de anos podem ser questionadas na Justiça, conforme o que foi contratado em cada operação. A análise do seu caso é individual, sigilosa e feita diretamente por um advogado.',
-        golpe: 'Entendi. Nesses casos a Justiça avalia se houve falha de segurança do banco, caso a caso. Um advogado vai analisar o que aconteceu.',
-        outro: 'Entendi. Vou encaminhar o seu relato para análise.'
-    };
-    for (const [branch, message] of Object.entries(expected)) assert.equal(FLOW[branch].result, message, branch);
-});
-
-test('a tela inicial preserva a ordem documentada e acrescenta exterior ao final', () => {
-    const codes = [...html.matchAll(/handleOptionSelect\(1,\s*'[^']+',\s*'([^']+)'\)/g)].map(match => match[1]);
-    assert.deepEqual(codes, ['processo', 'empresa', 'bloqueio', 'recebiveis', 'avalista', 'imovel', 'servidor', 'golpe', 'outro', 'exterior']);
-    assert.match(html, /<script src="quiz-flow\.js"><\/script>/);
-    assert.doesNotMatch(html, /script\.js/);
-});
-
-test('não exibe contagem de perguntas nem itens removidos', () => {
-    const active = html + source;
-    assert.doesNotMatch(active, /Pergunta \$\{|Pergunta \d+ de \d+/);
-    const removedTerms = ['Rosen' + 'baum', 'Super' + 'endividamento', 'Busca e ' + 'Apreensão'];
-    for (const term of removedTerms) assert.equal(active.toLowerCase().includes(term.toLowerCase()), false);
-});
-
-test('bloqueio só fica urgente pela origem judicial', () => {
-    state.urgent = false;
-    applyRules('bloqueio', 1, 'hoje', 'Hoje ou ontem');
-    assert.equal(state.urgent, false);
-    applyRules('bloqueio', 0, 'justica', 'A Justiça, por causa de um processo');
-    assert.equal(state.urgent, true);
-});
-
-test('faixas de valor e exceções seguem a matriz de qualificação', () => {
-    state.tags = [];
-    state.valueCode = null;
-    applyRules('empresa', 2, '100_300', 'R$ 100 a 300 mil');
-    assert.equal(state.valueCode, '100_300');
-    applyRules('empresa', 3, 'recebiveis', 'Recebíveis da empresa');
-    assert.deepEqual(Array.from(state.tags), ['recebiveis']);
-
-    state.outcome = null;
-    applyRules('golpe', 1, 'ate_30', 'Até R$ 30 mil');
-    assert.equal(state.outcome, 'valor_baixo');
-});
-
-test('classificação final aplica laudo, revisão e prioridade máxima', () => {
-    Object.assign(state, { branch: 'empresa', valueCode: 'ate_50', outcome: null, tags: [], urgent: false });
+    resetState(state, { branch: 'processo', tags: ['processo'] });
+    applyRules('processo', 0, 'whatsapp', 'WhatsApp');
+    applyRules('processo', 1, 'ate_50', 'Até R$ 50 mil');
     finishBranch();
-    assert.equal(state.outcome, 'oferta_laudo');
 
-    Object.assign(state, { branch: 'empresa', valueCode: '100_300', outcome: null, tags: [], urgent: false });
+    assert.equal(state.urgent, true);
+    assert.equal(state.outcome, 'qualificado');
+    assert.ok(Array.from(state.tags).includes('urgente'));
+});
+
+test('bens em risco são a única pergunta multisseleção e exigem confirmação', () => {
+    const { api, elements } = loadFlow();
+    const { FLOW, state, renderQuestion, toggleMultiSelect, confirmMultiSelect } = api;
+
+    assert.equal(FLOW.processo.questions[2][2].multiple, true);
+    assert.equal(typeof toggleMultiSelect, 'function');
+    assert.equal(typeof confirmMultiSelect, 'function');
+
+    resetState(state, { branch: 'processo', questionIndex: 2, tags: ['processo'] });
+    renderQuestion();
+    assert.match(elements.get('step2Options').innerHTML, /type="checkbox"/);
+    assert.match(elements.get('step2Options').innerHTML, /Confirmar bens em risco/);
+
+    toggleMultiSelect('Imóvel onde moro', 'moradia', true);
+    toggleMultiSelect('Veículos', 'veiculos', true);
+    confirmMultiSelect();
+
+    assert.equal(state.questionIndex, 3);
+    assert.deepEqual(JSON.parse(JSON.stringify(state.answers[0])), {
+        question: 'Quais bens ou valores podem estar em risco?',
+        answer: 'Imóvel onde moro; Veículos',
+        value: ['moradia', 'veiculos']
+    });
+});
+
+test('bloqueio fiscal ou trabalhista sai da triagem bancária sem revelar contato', () => {
+    const { api, elements } = loadFlow();
+    const { FLOW, state, applyRules, finishBranch, getDismissalContent, isDismissedOutcome } = api;
+
+    assert.deepEqual(JSON.parse(JSON.stringify(FLOW.bloqueio.questions[1][1].map(([label]) => label))), ['Dívida bancária', 'Cobrança fiscal', 'Processo trabalhista', 'Não sei']);
+    assert.equal(typeof isDismissedOutcome, 'function');
+
+    resetState(state, { branch: 'bloqueio', tags: ['bloqueio'] });
+    applyRules('bloqueio', 1, 'fiscal', 'Cobrança fiscal');
+    finishBranch();
+
+    assert.equal(state.outcome, 'fora_do_bancario');
+    assert.equal(isDismissedOutcome(state.outcome), true);
+    const guidance = getDismissalContent(state.outcome).guidance;
+    assert.match(guidance, /advogado/i);
+    assert.match(guidance, /Defensoria|entidade de classe/i);
+
+    api.showDismissal(state.outcome);
+    assert.equal(elements.get('leadForm').hidden, true);
+});
+
+test('financiamento imobiliário aceita parcela em dia que se tornou insustentável', () => {
+    const { api } = loadFlow();
+    const firstQuestion = api.FLOW.imovel.questions[0];
+
+    assert.equal(api.FLOW.imovel.label, 'Financiamento imobiliário');
+    assert.equal(firstQuestion[0], 'Como estão as parcelas?');
+    assert.deepEqual(JSON.parse(JSON.stringify(firstQuestion[1].map(([label]) => label))), ['Em dia, mas ficaram insustentáveis', '1 ou 2 em atraso', '3 ou mais em atraso', 'Não sei']);
+});
+
+test('golpe só dispensa dinâmicas conhecidas fora da falsa central com PIX', () => {
+    const { api } = loadFlow();
+    const { state, applyRules } = api;
+
+    assert.equal(api.FLOW.golpe.label, 'Golpe PIX de falsa central');
+
+    resetState(state, { branch: 'golpe' });
+    applyRules('golpe', 0, 'aplicativo', 'Instalação de aplicativo');
+    assert.equal(state.outcome, 'golpe_fora_escopo');
+
+    resetState(state, { branch: 'golpe' });
+    applyRules('golpe', 0, 'nao_sei', 'Não sei');
+    assert.equal(state.outcome, null);
+});
+
+test('exterior usa a nomenclatura aprovada e mantém investimento em análise', () => {
+    const { api } = loadFlow();
+    const { FLOW, state, finishBranch } = api;
+
+    assert.equal(FLOW.exterior.label, 'Residente no exterior');
+    assert.deepEqual(JSON.parse(JSON.stringify(FLOW.exterior.questions[0][1].map(([label]) => label))), [
+        'Tenho conta ou dívida no Brasil',
+        'Quero investir no Brasil',
+        'Imóvel no Brasil',
+        'Outro assunto bancário',
+        'Não sei'
+    ]);
+
+    resetState(state, { branch: 'exterior', tags: ['exterior'] });
     finishBranch();
     assert.equal(state.outcome, 'qualificado');
-    assert.deepEqual(Array.from(state.tags), ['revisar']);
+});
 
-    Object.assign(state, { branch: 'empresa', valueCode: 'acima_500', outcome: null, tags: [], urgent: false });
+test('faixas de valor registram contexto sem criar dispensa ou caminho de laudo', () => {
+    const { api } = loadFlow();
+    const { state, finishBranch, isDismissedOutcome } = api;
+
+    resetState(state, { branch: 'empresa', valueCode: 'ate_50', valueLabel: 'Até R$ 50 mil', tags: ['empresa'] });
     finishBranch();
-    assert.deepEqual(Array.from(state.tags), ['prioridade_maxima']);
+
+    assert.equal(state.outcome, 'qualificado');
+    assert.equal(isDismissedOutcome('oferta_laudo'), false);
 });
 
-test('servidor recebe a etiqueta documentada conforme os três critérios', () => {
-    Object.assign(state, { branch: 'servidor', outcome: null, tags: [], urgent: false, serverIncome: '10_20', serverTime: 'mais_10', loanTime: '5_10' });
-    finishBranch();
-    assert.deepEqual(Array.from(state.tags), ['servidor_nulidade']);
+test('indicador de urgência usa os IDs do resultado e atualiza sem animação reduzida', () => {
+    const { api, elements } = loadFlow();
 
-    Object.assign(state, { branch: 'servidor', outcome: null, tags: [], urgent: false, serverIncome: 'ate_10', serverTime: 'mais_10', loanTime: '5_10' });
-    finishBranch();
-    assert.deepEqual(Array.from(state.tags), ['servidor_fora_do_perfil']);
+    assert.equal(typeof api.updateUrgencyIndicator, 'function');
+    api.updateUrgencyIndicator(true);
+
+    assert.equal(elements.get('urgencyIndicator').dataset.urgent, 'true');
+    assert.match(elements.get('urgencyStatus').textContent, /prioridade/i);
+    assert.equal(elements.get('urgencyDeadlineNote').hidden, false);
+    assert.equal(elements.get('urgencyFill').style.transition, 'none');
 });
 
-test('consentimento vem antes do primeiro campo de contato', () => {
-    assert.ok(html.indexOf('id="consentimento"') < html.indexOf('id="nome"'));
+test('payload de lead versiona consentimento e limita atribuição a UTMs', () => {
+    const { api } = loadFlow();
+    const { state, buildLeadPayload } = api;
+
+    assert.equal(typeof buildLeadPayload, 'function');
+    resetState(state, {
+        branch: 'empresa',
+        tags: ['empresa'],
+        valueLabel: 'Até R$ 50 mil',
+        answers: [{ question: 'Qual dívida?', answer: 'Capital de giro', value: 'capital_giro' }]
+    });
+    const payload = buildLeadPayload({
+        name: 'Pessoa de teste',
+        whatsapp: '5511999999999',
+        city: 'São Paulo',
+        state: 'SP',
+        contactPeriod: 'manha'
+    });
+
+    assert.equal(payload.event_type, 'lead_submission');
+    assert.equal(payload.channel, 'web_form');
+    assert.equal(payload.channel_user_id, null);
+    assert.equal(payload.contact_period, 'manha');
+    assert.match(payload.event_id, /^evt_/);
+    assert.match(payload.consent_version, /^web_form_/);
+    assert.match(payload.consent_timestamp, /^\d{4}-\d{2}-\d{2}T/);
+    assert.deepEqual(JSON.parse(JSON.stringify([payload.utm_source, payload.utm_medium, payload.utm_campaign])), ['google', 'cpc', 'outubro']);
+    assert.equal(payload.origin, undefined);
 });
 
-test('WhatsApp internacional combina DDI editável sem duplicar o código do país', () => {
-    assert.equal(typeof buildLeadWhatsapp, 'function');
-    assert.equal(buildLeadWhatsapp('(11) 99999-9999', '+55', 'empresa'), '5511999999999');
-    assert.equal(buildLeadWhatsapp('912 345 678', '+351', 'exterior'), '351912345678');
-    assert.equal(buildLeadWhatsapp('+351 912 345 678', '+351', 'exterior'), '351912345678');
+test('analytics não inclui PII nem relato livre e reduz o referrer ao hostname', () => {
+    const { api } = loadFlow();
+    const { state, buildAnalyticsPayload } = api;
+
+    assert.equal(typeof buildAnalyticsPayload, 'function');
+    resetState(state, {
+        branch: 'outro',
+        tags: ['outro'],
+        answers: [{ question: 'Conte', answer: 'Relato livre que não pode sair', value: 'texto_livre' }]
+    });
+    const payload = buildAnalyticsPayload('ramo_outro');
+    const serialized = JSON.stringify(payload);
+
+    assert.equal(payload.event_type, 'analytics');
+    assert.equal(payload.referrer_hostname, 'partner.example');
+    for (const field of ['name', 'whatsapp', 'city', 'state', 'answers', 'nome', 'respostas']) assert.equal(Object.hasOwn(payload, field), false);
+    assert.doesNotMatch(serialized, /Relato livre/);
 });
 
-test('devolutiva muda o argumento de urgência conforme o ramo', () => {
-    assert.equal(typeof getAuthorityContent, 'function');
-    const urgent = getAuthorityContent('processo', true);
-    const regular = getAuthorityContent('empresa', false);
-    assert.equal(urgent.tone, 'urgent');
-    assert.match(urgent.title, /atenção rápida/i);
-    assert.equal(regular.tone, 'analysis');
-    assert.match(regular.points.join(' '), /contratos/i);
-});
+test('webhook placeholder não gera chamadas de rede e o handoff minimiza a mensagem', async () => {
+    const { api, networkCalls } = loadFlow();
+    const { state, sendEvent, sendAnalyticsEvent, buildWhatsappHandoff } = api;
 
-test('cada cenário recebe percentual determinístico dentro da faixa aprovada', () => {
-    assert.equal(typeof getTriagePercentage, 'function');
-    const branches = Object.keys(FLOW);
-    const regularValues = branches.map(branch => getTriagePercentage(branch, false));
-    const repeatedValues = branches.map(branch => getTriagePercentage(branch, false));
+    assert.equal(typeof sendEvent, 'function');
+    resetState(state, { branch: 'processo', urgent: true, tags: ['processo'], valueLabel: 'Acima de R$ 500 mil' });
+    await sendEvent({ event_type: 'lead_submission' });
+    sendAnalyticsEvent('ramo_processo');
+    assert.deepEqual(networkCalls, []);
 
-    assert.deepEqual(regularValues, repeatedValues);
-    assert.ok(new Set(regularValues).size >= 8);
-    for (const value of regularValues) {
-        assert.ok(value >= 79.1 && value <= 89.9);
-        assert.equal(Number(value.toFixed(1)), value);
-    }
-    assert.ok(getTriagePercentage('processo', true) >= getTriagePercentage('processo', false));
-    assert.equal(getTriagePercentage('inexistente', false), 79.1);
-});
-
-test('a porcentagem continua animando com movimento reduzido ativo', () => {
-    const element = { textContent: '0,0%' };
-    animationFrames.length = 0;
-
-    animatePercentage(element, 85.3, 1000);
-
-    assert.equal(element.textContent, '0,0%');
-    assert.equal(animationFrames.length, 1);
-    animationFrames.shift()(250);
-    assert.notEqual(element.textContent, '0,0%');
-    assert.notEqual(element.textContent, '85,3%');
-});
-
-test('resposta franca por corte de qualificação não revela motivo financeiro', () => {
-    assert.equal(typeof getDismissalContent, 'function');
-    const content = getDismissalContent('valor_baixo');
-    const fullText = [content.title, content.lead, content.guidance].join(' ').toLowerCase();
-    assert.doesNotMatch(fullText, /valor|barat|baixo|ticket|honorário|custar|custo/);
-    assert.match(fullText, /orientação clara/);
-    assert.match(fullText, /consumidor\.gov\.br/);
+    assert.equal(typeof buildWhatsappHandoff, 'function');
+    const handoff = decodeURIComponent(buildWhatsappHandoff({
+        name: 'Pessoa de teste',
+        city: 'São Paulo',
+        state: 'SP'
+    }));
+    assert.match(handoff, /Ramo: Banco me processou/);
+    assert.match(handoff, /Urgência: Sim/);
+    assert.match(handoff, /Nome: Pessoa de teste/);
+    assert.match(handoff, /Cidade\/UF: São Paulo\/SP/);
+    assert.doesNotMatch(handoff, /Acima de R\$ 500 mil|Relato livre|respostas|Documentos/i);
 });
