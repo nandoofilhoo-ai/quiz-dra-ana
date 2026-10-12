@@ -125,9 +125,10 @@ test('workflow não contém segredos reais, hosts privados ou credenciais embuti
     const workflow = readWorkflow();
     const serialized = JSON.stringify(workflow);
 
-    assert.doesNotMatch(serialized, /eyJ[a-zA-Z0-9_-]{20,}/);
+    assert.doesNotMatch(serialized, /\beyJ[A-Za-z0-9_-]*\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/);
+    assert.doesNotMatch(serialized, /\b\d{6,}:[A-Za-z0-9_-]{16,}\b/);
+    assert.doesNotMatch(serialized, /"(?:api[_-]?key|token|secret|authorization)"\s*:\s*"(?!={{)[^"]{16,}"/i);
     assert.doesNotMatch(serialized, /https?:\/\//i);
-    assert.doesNotMatch(serialized, /12682970:|da307f91/i);
 });
 
 test('somente os destinos adiados aparecem como escritores externos', () => {

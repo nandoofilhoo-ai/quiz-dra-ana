@@ -5,15 +5,15 @@ Esta pasta reúne o contexto operacional do funil de triagem da Dra. Ana Maria d
 ## Estado comprovado da primeira fase
 
 - O formulário web usa o visual aprovado `Sculpted Bordeaux`; o seletor de variações foi removido.
-- As regras consolidadas de triagem estão implementadas no frontend. A devolutiva precede a captura de contato, e dispensas confirmadas não coletam contato.
-- `n8n_workflow.json` é um template local inativo. Os nós que escrevem dados estão desabilitados e o arquivo não contém CRM ou token literal.
+- O frontend cobre e testa regras de triagem já reconciliadas, incluindo devolutiva antes da captura de contato e dispensas confirmadas sem coleta. A reconciliação das demais etapas com a especificação permanece pendente.
+- `n8n_workflow.json` é um template local inativo. Os nós que escrevem dados estão desabilitados, incluindo o nó CRM, sem endpoint ou token literal.
 - Laudo, CRM, GA4/GTM e domínio permanecem adiados.
-- Não houve publicação, deploy público ou configuração remota de automações nesta fase.
+- Publicação, deploy público e configuração remota de automações não foram realizados nem verificados nesta fase.
 
 ## Documentos
 
 - `event-contract.md`: contrato canônico de eventos, consentimento e limites de PII.
-- `social-automation-spec.md`: roteiro de automações sociais e mensagens aprovadas para configuração futura.
+- `social-automation-spec.md`: roteiro de automações sociais e mensagens documentadas/propostas para configuração futura.
 - `manychat-context.md`: resumo executivo, arquitetura, integrações, estado e pendências.
 - `manychat-flow-spec.md`: especificação operacional da triagem e regras de qualificação.
 

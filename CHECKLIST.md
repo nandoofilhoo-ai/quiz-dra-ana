@@ -28,7 +28,7 @@ Arquivo de acompanhamento vivo. Um item só é marcado como concluído quando ex
 ## Auditoria e integrações externas
 
 - [!] Conta ManyChat não auditável/configurável enquanto o token disponibilizado retornar HTTP 401. A API pública também não cria gatilhos ou fluxos visuais do Instagram; a configuração depende da interface e de acesso administrativo válido.
-- [x] `n8n_workflow.json` revisado como template local inativo: nós de escrita desabilitados, sem CRM ou token literal.
+- [x] `n8n_workflow.json` revisado como template local inativo: nós de escrita desabilitados, incluindo o nó CRM, sem endpoint ou token literal.
 - [!] n8n remoto não ativável sem URL base, chave de API pública com escopo necessário, URL final do webhook e destino aprovado para os dados.
 - [~] CRM adiado; não versionar tokens, credenciais, IDs privados ou placeholders que aparentem integração ativa.
 - [~] GA4/GTM adiados; a telemetria futura deve seguir o contrato local sem PII.
@@ -46,7 +46,8 @@ Arquivo de acompanhamento vivo. Um item só é marcado como concluído quando ex
 - [x] Referências visíveis substituídas por “formulário”.
 - [x] Tela “Resultado apurado”, indicador qualitativo de urgência e texto de cautela para prazo implementados.
 - [x] Preferência de contato limitada a manhã ou tarde.
-- [x] Regras consolidadas de `docs/manychat-flow-spec.md` implementadas no frontend.
+- [x] Regras de triagem reconciliadas e cobertas por testes foram implementadas no frontend: processo, bloqueio, financiamento, golpe PIX, exterior, consentimento e dispensas confirmadas.
+- [-] Reconciliar as demais etapas do formulário com `docs/manychat-flow-spec.md`; não considerar toda a especificação implementada até essa conferência ponta a ponta.
 - [x] Caminhos executáveis de laudo removidos; dispensas confirmadas não coletam contato.
 - [x] Consentimento versionado e UTMs minimizadas implementados conforme `docs/event-contract.md`.
 
@@ -86,4 +87,4 @@ Os termos abaixo só podem aparecer em histórico ou auditoria; não são requis
 | 2026-10-11 | Aprovação visual da cliente | Concluído | A cliente escolheu `Sculpted Bordeaux`; o visual foi fixado no formulário e o seletor removido. |
 | 2026-10-11 | Consolidação da reunião de 09/10 | Concluído | Nomenclaturas, urgência, laudo, integrações e automações sociais consolidados sem inventar pendências comerciais. |
 | 2026-10-11 | Contratos da primeira fase | Concluído | `docs/event-contract.md` e `docs/social-automation-spec.md` criados; integrações externas permanecem adiadas/bloqueadas. |
-| 2026-10-11 | Fechamento documental e QA automatizado | Concluído | Triagem e template n8n validados localmente; ManyChat, TikTok, deploy e integrações remotas permanecem pendentes de acesso/configuração. |
+| 2026-10-11 | Fechamento documental e QA automatizado | Concluído | Regras de triagem cobertas por testes e template n8n validados localmente; reconciliação integral da especificação, ManyChat, TikTok, deploy e integrações remotas permanecem pendentes. |
