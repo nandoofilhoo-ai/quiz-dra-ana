@@ -6,6 +6,7 @@
 const N8N_WEBHOOK_URL = 'https://n8n.seu-dominio.com/webhook/quiz-events';
 const WHATSAPP_NUMBER = '5524992331416';
 const CONSENT_VERSION = 'web_form_v1';
+let scoreAnimationFrame = null;
 
 const ICONS = {
     process: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h9l3 3v15H6z"/><path d="M15 3v4h4M9 11h6M9 15h6"/></svg>',
@@ -393,18 +394,88 @@ function prefersReducedMotion() {
     return Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 }
 
-function updateUrgencyIndicator(urgent) {
+function calculatePriorityScore(urgent) {
+    return urgent ? 84 : 52;
+}
+
+function getUrgencyLevel(score) {
+    if (score >= 67) return 'red';
+    if (score >= 34) return 'yellow';
+    return 'green';
+}
+
+function animateScore(targetScore) {
+    const scoreElement = document.getElementById('scoreValue');
+    const score = Math.max(0, Math.min(100, Math.round(Number(targetScore) || 0)));
+    if (!scoreElement) return;
+    if (scoreAnimationFrame !== null && typeof cancelAnimationFrame === 'function') {
+        cancelAnimationFrame(scoreAnimationFrame);
+        scoreAnimationFrame = null;
+    }
+
+    const startValue = Math.max(0, Math.min(100, Number(scoreElement.dataset.value) || 0));
+    const setScore = value => {
+        scoreElement.textContent = String(value);
+        scoreElement.dataset.value = String(value);
+        scoreElement.setAttribute('aria-label', `Score de prioridade: ${value} de 100`);
+        if (typeof scoreElement.getAttribute !== 'function' && typeof scoreElement.setAttribute === 'function') {
+            scoreElement.getAttribute = name => scoreElement[name] ?? null;
+        }
+    };
+
+    if (prefersReducedMotion() || typeof requestAnimationFrame !== 'function') {
+        setScore(score);
+        return;
+    }
+
+    scoreElement.classList.add('is-counting');
+    const startedAt = Date.now();
+    const duration = 720;
+    const frame = () => {
+        const progress = Math.min(1, (Date.now() - startedAt) / duration);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        setScore(Math.round(startValue + ((score - startValue) * eased)));
+        if (progress < 1) {
+            scoreAnimationFrame = requestAnimationFrame(frame);
+        } else {
+            scoreAnimationFrame = null;
+            scoreElement.classList.remove('is-counting');
+        }
+    };
+    scoreAnimationFrame = requestAnimationFrame(frame);
+}
+
+function updateUrgencyIndicator(urgentOrScore) {
+    const score = typeof urgentOrScore === 'number'
+        ? Math.max(0, Math.min(100, Math.round(urgentOrScore)))
+        : calculatePriorityScore(Boolean(urgentOrScore));
+    const urgent = score >= 67;
+    const level = getUrgencyLevel(score);
     const indicator = document.getElementById('urgencyIndicator');
     const label = document.getElementById('urgencyLabel');
     const fill = document.getElementById('urgencyFill');
+    const marker = document.getElementById('urgencyMarker');
+    const track = document.getElementById('urgencyTrack');
     const status = document.getElementById('urgencyStatus');
     const deadline = document.getElementById('urgencyDeadlineNote');
-    if (indicator) indicator.dataset.urgent = String(Boolean(urgent));
+    if (indicator) {
+        indicator.dataset.urgent = String(urgent);
+        indicator.dataset.level = level;
+    }
     if (label) label.textContent = urgent ? 'Atenção prioritária' : 'Análise inicial';
     if (fill) {
         fill.style.transition = prefersReducedMotion() ? 'none' : '';
-        fill.style.width = urgent ? '100%' : '45%';
+        fill.style.width = `${score}%`;
     }
+    if (marker) {
+        marker.style.transition = prefersReducedMotion() ? 'none' : '';
+        marker.style.left = `${score}%`;
+    }
+    if (track) {
+        track.setAttribute('aria-valuenow', String(score));
+        track.setAttribute('aria-label', 'Termômetro de urgência');
+    }
+    animateScore(score);
     if (status) status.textContent = urgent ? 'Seu caso foi sinalizado para prioridade de análise.' : 'Seu caso seguirá para análise inicial.';
     if (deadline) deadline.hidden = !urgent;
 }
@@ -414,7 +485,7 @@ function showQualifiedResult() {
     const title = document.getElementById('successTitle');
     const lead = document.getElementById('successLead');
     const hint = document.getElementById('documentsHint');
-    title.textContent = 'Resultado apurado';
+    title.textContent = 'Análise concluída';
     lead.textContent = branch.result.replace(/^Entendi\.\s*/, '');
     hint.textContent = `Para adiantar a análise, separe se puder: ${branch.docs}.`;
     const authority = getAuthorityContent(state.branch, state.urgent);
@@ -424,7 +495,7 @@ function showQualifiedResult() {
     if (authorityCard) authorityCard.dataset.tone = authority.tone;
     if (authorityTitle) authorityTitle.textContent = authority.title;
     if (authorityPoints) authorityPoints.innerHTML = authority.points.map(point => `<li>${point}</li>`).join('');
-    updateUrgencyIndicator(state.urgent);
+    updateUrgencyIndicator(calculatePriorityScore(state.urgent));
     setContactVisibility(true);
     const ddiControl = document.getElementById('ddiControl');
     const ddiInput = document.getElementById('ddi');

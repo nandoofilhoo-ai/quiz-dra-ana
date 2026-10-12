@@ -42,6 +42,8 @@ body {
 .authority-card,
 .urgency-indicator,
 .urgency-fill,
+.urgency-marker,
+.score-value,
 .success-step #leadForm,
 .disq-box,
 .field input,
@@ -346,7 +348,9 @@ body {
     .card,
     .opt,
     .opt-ico,
-    .urgency-fill {
+    .urgency-fill,
+    .urgency-marker,
+    .score-value {
         scroll-behavior: auto;
         transition: none !important;
         animation: none !important;

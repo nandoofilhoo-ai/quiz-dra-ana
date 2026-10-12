@@ -115,14 +115,23 @@
                     <section class="quiz-step success-step" id="step4">
                         <div class="success-hero">
                             <div class="result-badge success">Resultado apurado</div>
-                            <h2 class="q-title" id="successTitle">Entendi.</h2>
+                            <h2 class="q-title" id="successTitle">Análise concluída</h2>
                             <p class="q-help" id="successLead"></p>
                         </div>
                         <article class="authority-card" id="authorityCard" data-tone="analysis">
                             <div class="authority-kicker">Orientação inicial</div>
-                            <section class="urgency-indicator" id="urgencyIndicator" aria-labelledby="urgencyLabel" aria-live="polite" data-urgent="false">
+                            <div class="authority-stat" aria-live="polite">
+                                <strong class="score-value" id="scoreValue" data-value="52" aria-label="Score de prioridade: 52 de 100">52</strong>
+                                <span>Score de prioridade, de 0 a 100</span>
+                                <small>Indicador inicial de triagem, não é probabilidade nem promessa de resultado.</small>
+                            </div>
+                            <section class="urgency-indicator" id="urgencyIndicator" aria-labelledby="urgencyLabel" aria-live="polite" data-urgent="false" data-level="yellow">
                                 <h3 class="urgency-label" id="urgencyLabel">Nível de atenção</h3>
-                                <div class="urgency-track" id="urgencyTrack" aria-hidden="true"><span class="urgency-fill" id="urgencyFill"></span></div>
+                                <div class="urgency-track" id="urgencyTrack" role="progressbar" aria-label="Termômetro de urgência" aria-valuemin="0" aria-valuemax="100" aria-valuenow="52">
+                                    <span class="urgency-fill" id="urgencyFill"></span>
+                                    <span class="urgency-marker" id="urgencyMarker" aria-hidden="true"></span>
+                                </div>
+                                <div class="urgency-legend" aria-hidden="true"><span>Baixa</span><span>Atenção</span><span>Prioritária</span></div>
                                 <p class="urgency-status" id="urgencyStatus">A prioridade será indicada conforme as respostas.</p>
                                 <p class="urgency-deadline" id="urgencyDeadlineNote" hidden>Seu prazo pode já estar correndo. Esta sinalização não garante resultado ou atendimento em prazo determinado.</p>
                             </section>
@@ -133,7 +142,7 @@
                         </article>
                         <div class="contact-intro">
                             <div class="whatsapp-mark" aria-hidden="true">◔</div>
-                            <div><h3>Envie o caso para análise</h3><p id="documentsHint"></p></div>
+                            <div><h3>Falta pouco...</h3><p id="documentsHint"></p></div>
                         </div>
                         <form id="leadForm" onsubmit="handleLeadSubmit(event)">
                             <label class="consent-field"><input type="checkbox" id="consentimento" required><span>Ao enviar seus dados, você autoriza o nosso contato por WhatsApp ou telefone. Suas informações são tratadas com sigilo, conforme a LGPD.</span></label>
