@@ -88,6 +88,37 @@ test('mapeamentos usam os campos canônicos do contrato de eventos', () => {
         assert.match(serialized, new RegExp(`\\$json\\.body\\.${field}\\b`), `campo ausente: ${field}`);
     }
     assert.doesNotMatch(serialized, /body\.(sessionId|nome|problema|detalhe_origem|valor_divida)\b/);
+
+    const crmPayload = JSON.parse(crm.parameters.jsonBody.slice(1));
+    assert.equal(crmPayload.whatsapp, '{{ $json.body.whatsapp }}');
+    assert.equal(crmPayload.phone, undefined);
+});
+
+test('analytics usa exatamente os campos permitidos e exclui PII de lead', () => {
+    const workflow = readWorkflow();
+    const analytics = nodeByName(workflow, 'Google Sheets - Analytics Funil');
+    const mappings = analytics.parameters.columns.value;
+    const allowedColumns = [
+        'Branch', 'Branch_Label', 'Event_ID', 'Event_Type', 'Session_ID', 'Tags',
+        'Timestamp', 'UTM_Campaign', 'UTM_Medium', 'UTM_Source', 'Urgent', 'Value_Range'
+    ];
+    const allowedBodyFields = [
+        'branch', 'branch_label', 'event_id', 'event_type', 'session_id', 'tags',
+        'timestamp', 'utm_campaign', 'utm_medium', 'utm_source', 'urgent', 'value_range'
+    ];
+    const forbiddenBodyFields = [
+        'answers', 'consent_version', 'consent_timestamp', 'name', 'whatsapp', 'city',
+        'state', 'contact_period', 'channel_user_id'
+    ];
+    const referencedBodyFields = [...JSON.stringify(mappings).matchAll(/\$json\.body\.([a-z_]+)/g)]
+        .map(match => match[1])
+        .sort();
+
+    assert.deepEqual(Object.keys(mappings).sort(), allowedColumns.sort());
+    assert.deepEqual([...new Set(referencedBodyFields)], allowedBodyFields.sort());
+    for (const field of forbiddenBodyFields) {
+        assert.equal(referencedBodyFields.includes(field), false, `analytics não pode mapear ${field}`);
+    }
 });
 
 test('workflow não contém segredos reais, hosts privados ou credenciais embutidas', () => {
