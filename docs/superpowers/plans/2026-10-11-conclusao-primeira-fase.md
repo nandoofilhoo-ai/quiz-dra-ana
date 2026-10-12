@@ -225,7 +225,7 @@ Expected: exit 0; nenhum segredo ou erro de whitespace.
 
 - [ ] **Step 3: Verificar termos removidos e credenciais**
 
-Run: `rg -n --hidden --glob '!.git/**' --glob '!*.docx' "12682970:|eyJhbGciOi|da307f91|oferta_laudo|laudo_fechar|SEU_TOKEN_PIPEZ_AQUI" .`
+Run: scan tracked text files for generic JWT, bot-token and credential-assignment patterns, plus the retired `oferta_laudo` and `laudo_fechar` identifiers, without recording any real credential fragment in the command or documentation.
 
 Expected: nenhuma credencial; termos antigos apenas em histórico explicitamente marcado, nunca no código executável.
 
