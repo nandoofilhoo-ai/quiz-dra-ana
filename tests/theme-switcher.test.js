@@ -80,9 +80,20 @@ test('protege a contenção horizontal do Sculpted no mobile', () => {
 
     assert.match(mobileBlock, /\.stage\s*\{[^}]*inline-size:\s*100%[^}]*max-inline-size:\s*100%/s);
     assert.match(mobileBlock, /\.shell\s*\{[^}]*inline-size:\s*100%[^}]*max-inline-size:\s*100%/s);
-    assert.match(mobileBlock, /\.card\s*\{[^}]*min-inline-size:\s*0[^}]*overflow-x:\s*clip/s);
+    assert.match(mobileBlock, /\.card\s*\{[^}]*min-inline-size:\s*0/s);
     assert.match(mobileBlock, /\.body,[\s\S]*?\.opt-txt\s*\{[^}]*min-inline-size:\s*0[^}]*max-inline-size:\s*100%/s);
     assert.match(mobileBlock, /\.opt-txt\s*\{[^}]*overflow-wrap:\s*anywhere/s);
+});
+
+test('não mascara nem trunca a cópia dos cards no mobile', () => {
+    const mobileBlock = themeStyles.match(/@media\s*\(max-width:\s*860px\)[\s\S]*?(?=@media\s*\(max-width:\s*600px\)|$)/)?.[0] || '';
+    const narrowBlock = themeStyles.match(/@media\s*\(max-width:\s*600px\)[\s\S]*?(?=@media\s*\(prefers-reduced-motion|$)/)?.[0] || '';
+
+    assert.match(mobileBlock, /html\[data-quiz-theme='sculpted'\][\s\S]*?\.opt\s*\{[^}]*overflow-x:\s*visible/s);
+    assert.doesNotMatch(mobileBlock, /\.card\s*\{[^}]*overflow-x:\s*(?:clip|hidden)/s);
+    assert.match(narrowBlock, /\.entry-options \.opt\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*36px\)\s+minmax\(0,\s*1fr\)/s);
+    assert.match(narrowBlock, /\.entry-options \.opt-txt,[\s\S]*?\.entry-options \.opt-txt > span\s*\{[^}]*max-inline-size:\s*100%[^}]*overflow-wrap:\s*anywhere/s);
+    assert.doesNotMatch(themeStyles, /\.opt-txt[^}]*text-overflow:\s*ellipsis/i);
 });
 
 test('entrega resultado qualitativo sem score, laudo ou promessa de prazo', () => {

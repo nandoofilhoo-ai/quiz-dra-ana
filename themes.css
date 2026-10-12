@@ -279,7 +279,17 @@ body {
         margin: 0;
         padding-left: 0;
         border-radius: 0;
-        overflow-x: clip;
+    }
+
+    html[data-quiz-theme='sculpted'],
+    html[data-quiz-theme='sculpted'] body,
+    html[data-quiz-theme='sculpted'] .stage,
+    html[data-quiz-theme='sculpted'] .shell,
+    html[data-quiz-theme='sculpted'] .card,
+    html[data-quiz-theme='sculpted'] .body,
+    html[data-quiz-theme='sculpted'] .opts,
+    html[data-quiz-theme='sculpted'] .opt {
+        overflow-x: visible;
     }
 
     [data-quiz-theme='sculpted'] .body,
@@ -309,6 +319,22 @@ body {
 
     [data-quiz-theme='sculpted'] .opt {
         border-radius: 12px 2px 12px 2px;
+    }
+
+    [data-quiz-theme='sculpted'] .entry-options .opt {
+        grid-template-columns: minmax(0, 36px) minmax(0, 1fr);
+        inline-size: 100%;
+        max-inline-size: 100%;
+        overflow: visible;
+    }
+
+    [data-quiz-theme='sculpted'] .entry-options .opt-txt,
+    [data-quiz-theme='sculpted'] .entry-options .opt-heading,
+    [data-quiz-theme='sculpted'] .entry-options .opt-txt strong,
+    [data-quiz-theme='sculpted'] .entry-options .opt-txt > span {
+        min-inline-size: 0;
+        max-inline-size: 100%;
+        overflow-wrap: anywhere;
     }
 }
 
