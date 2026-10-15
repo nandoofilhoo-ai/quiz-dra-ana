@@ -498,6 +498,21 @@ body {
     color: var(--accent);
 }
 
+.aside-title > span,
+.aside-title em {
+    display: block;
+}
+
+.aside-title em {
+    max-inline-size: 15ch;
+    margin-top: 0.16em;
+    font-size: clamp(1.45rem, 2.2vw, 2rem);
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    overflow-wrap: break-word;
+    text-wrap: balance;
+}
+
 .vcard {
     background: var(--ink);
     color: #ffffff;
@@ -1576,10 +1591,21 @@ body {
 
     .entry-options .opt-heading {
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         align-items: flex-start;
-        gap: 0.45rem;
-        width: auto;
+        justify-content: space-between;
+        gap: 0.5rem;
+        width: 100%;
+    }
+
+    .entry-options .opt-heading strong {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .entry-options .audience-chip {
+        flex: 0 0 auto;
+        margin-left: auto;
     }
 
     .entry-options .opt-arrow {

@@ -12,14 +12,14 @@ O bot coleta contexto, aplica somente filtros confirmados, entrega orientação 
 - Laudo removido da V1: não há oferta, preço, caminho de contratação ou coleta de contato associada a laudo.
 - CRM, GA4/GTM e domínio permanecem adiados até que acessos e definições estejam disponíveis.
 - A conta ManyChat não é auditável enquanto o token disponível retornar HTTP 401.
-- O n8n não é auditável nem ativável sem URL base e chave `X-N8N-API-KEY` fornecidas com segurança.
+- O workflow remoto do n8n está ativo e foi validado com eventos sintéticos; a chave permanece fora do repositório.
 - Faixas de valor são contexto/priorização; não há corte automático por valor sem decisão comercial confirmada.
 - “Não sei” não elimina automaticamente o lead.
 - A devolutiva vem antes da captura de contato. Casos dispensados recebem orientação útil e a opção de refazer as perguntas, sem coleta de contato.
 
 ## Relação com o formulário
 
-O projeto possui um formulário web standalone. Ele implementa a triagem detalhada, registra eventos locais conforme `docs/event-contract.md` e pode encaminhar o caso ao canal humano aprovado. O endpoint n8n continua desativado enquanto a URL base não for fornecida.
+O projeto possui um formulário web standalone. Ele implementa a triagem detalhada, registra eventos conforme `docs/event-contract.md` e pode encaminhar o caso ao canal humano aprovado. O endpoint n8n remoto está ativo; o template local permanece inativo.
 
 O ManyChat é a camada de aquisição e triagem social. As duas superfícies usam os mesmos ramos e categorias:
 
@@ -48,11 +48,11 @@ Todas as mensagens direcionam para o formulário pelo link oficial do canal. Nã
 
 - ManyChat: configuração e auditoria bloqueadas pelo retorno HTTP 401 do token disponível.
 - Formulário web: fonte executável da triagem; visual aprovado `Sculpted Bordeaux`.
-- n8n: contrato local em `docs/event-contract.md`; endpoint desativado até existir URL base e `X-N8N-API-KEY` segura.
+- n8n: contrato local em `docs/event-contract.md`; endpoint remoto validado nas abas de analytics e leads, com CRM desabilitado.
 - Google Sheets: dependência de analytics/contingência adiada com GA4/GTM; não é ferramenta operacional diária.
 - CRM: adiado; não há integração nem ID para versionar.
 - WhatsApp comercial: o número atualmente presente no frontend permanece pendente de confirmação e não é tratado como definitivo neste documento.
-- Domínio e deploy público: adiados até configuração e validação.
+- Domínio personalizado: adiado; deploy público na Vercel validado.
 
 ## Dados e segurança
 
@@ -65,9 +65,9 @@ O consentimento obrigatório é exibido antes da captura:
 ## Pendências que continuam pendentes
 
 - Acessos válidos à conta ManyChat, Instagram e TikTok.
-- URL base e chave segura do n8n.
+- Monitoramento do workflow remoto e manutenção da credencial segura do n8n.
 - Decisão e acesso ao CRM.
-- Configuração de GA4/GTM, domínio e publicação.
+- Configuração de GA4/GTM e domínio personalizado.
 - Confirmação do número comercial, horários de contato e dados institucionais.
 
 Nenhum item pendente deve ser transformado em requisito automático ou marcado como concluído sem evidência.

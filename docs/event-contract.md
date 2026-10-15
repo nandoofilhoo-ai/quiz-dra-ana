@@ -1,6 +1,6 @@
 # Contrato local de eventos
 
-Status: contrato canônico para as próximas tarefas. O envio externo permanece desativado até que a URL base do n8n seja fornecida e validada.
+Status: contrato canônico para as próximas tarefas. O envio externo está ativo no webhook n8n validado; o CRM permanece desabilitado.
 
 ## Princípios
 
@@ -8,7 +8,7 @@ Status: contrato canônico para as próximas tarefas. O envio externo permanece 
 - `analytics` nunca contém PII. Não incluir nome, WhatsApp, cidade, estado, respostas textuais livres ou qualquer documento.
 - `lead_submission` só acontece depois da devolutiva, do consentimento e da coleta autorizada de contato.
 - Valores, faixas, etiquetas e respostas servem para triagem; não representam promessa de contratação, resultado, desconto ou prazo de solução.
-- Enquanto a URL do n8n não estiver configurada, o endpoint não é chamado. O formulário continua podendo encaminhar o caso pelo canal humano aprovado.
+- O endpoint n8n remoto está configurado e foi validado com eventos sintéticos; falhas continuam sem bloquear o encaminhamento pelo canal humano aprovado.
 
 ## Envelope comum
 
@@ -88,8 +88,8 @@ Assim, não existe uma regra geral de “pular o WhatsApp”: a exceção depend
 
 ## Endpoint e estado de ativação
 
-- Endpoint n8n: pendente de URL base válida e da configuração segura de `X-N8N-API-KEY`.
-- Estado atual: desativado/standby; não considerar o webhook concluído nem substituir o encaminhamento humano.
+- Endpoint n8n: `https://dinastia-n8n-webhook.q4obno.easypanel.host/webhook/quiz-events`.
+- Estado atual: ativo e validado com eventos sintéticos nas abas `Analytics_Funil` e `Leads_Qualificados`; o CRM permanece desabilitado.
 - O workflow só poderá ser ativado depois de configurar a URL real, a chave por variável segura e os destinos aprovados.
 - URLs fictícias, tokens em código e fallbacks que aparentem funcionar não são permitidos.
 

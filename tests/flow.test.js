@@ -7,12 +7,16 @@ const vm = require('node:vm');
 const root = path.resolve(__dirname, '..');
 const source = fs.readFileSync(path.join(root, 'quiz-flow.js'), 'utf8');
 
-function loadFlow({ webhookUrl = null, fetchImpl = null } = {}) {
+function loadFlow({ webhookUrl = null, fetchImpl = null, reducedMotion = true, requestAnimationFrameImpl = null, cancelAnimationFrameImpl = null, clock = null } = {}) {
     const storage = new Map();
     const elements = new Map();
     const networkCalls = [];
     const timeoutCalls = [];
     const intervalCalls = [];
+    const testClock = clock || { now: Date.now() };
+    class SandboxDate extends Date {
+        static now() { return testClock.now; }
+    }
     const runtimeSource = webhookUrl
         ? source.replace(
             "const N8N_WEBHOOK_URL = 'https://n8n.seu-dominio.com/webhook/quiz-events';",
@@ -37,7 +41,7 @@ function loadFlow({ webhookUrl = null, fetchImpl = null } = {}) {
         Blob,
         URL,
         URLSearchParams,
-        Date,
+        Date: SandboxDate,
         Math,
         setTimeout: (callback, delay) => {
             timeoutCalls.push({ callback, delay });
@@ -74,11 +78,13 @@ function loadFlow({ webhookUrl = null, fetchImpl = null } = {}) {
         },
         location: { search: '?utm_source=google&utm_medium=cpc&utm_campaign=outubro' },
         window: {
-            matchMedia: () => ({ matches: true }),
+            matchMedia: () => ({ matches: reducedMotion }),
             parent: { postMessage() {} },
             location: {},
             ResizeObserver: null
         },
+        requestAnimationFrame: requestAnimationFrameImpl || undefined,
+        cancelAnimationFrame: cancelAnimationFrameImpl || undefined,
         fetch: (url, options) => {
             networkCalls.push({ kind: 'fetch', url, options });
             return fetchImpl ? fetchImpl(url, options) : Promise.resolve({ ok: true });
@@ -88,7 +94,7 @@ function loadFlow({ webhookUrl = null, fetchImpl = null } = {}) {
     vm.createContext(sandbox);
     vm.runInContext(`${runtimeSource}\n;globalThis.__quiz = {
         FLOW, state, applyRules, finishBranch, renderQuestion, answerQuestion,
-        showDismissal, showAnalysis, handleLeadSubmit,
+        showDismissal, showAnalysis, showQualifiedResult, handleLeadSubmit,
         toggleMultiSelect: typeof toggleMultiSelect === 'function' ? toggleMultiSelect : undefined,
         confirmMultiSelect: typeof confirmMultiSelect === 'function' ? confirmMultiSelect : undefined,
         getDismissalContent, isDismissedOutcome: typeof isDismissedOutcome === 'function' ? isDismissedOutcome : undefined,
@@ -127,6 +133,11 @@ function resetState(state, overrides = {}) {
         selectedOptions: [],
         ...overrides
     });
+}
+
+function finishAnimation(frames, clock) {
+    clock.now += 1000;
+    while (frames.length) frames.shift()();
 }
 
 test('processo usa comunicação, faixa e bens sob risco sem reduzir a urgência', () => {
@@ -261,19 +272,156 @@ test('indicador de urgência usa os IDs do resultado e atualiza sem animação r
 });
 
 test('score de prioridade alimenta o termômetro sem usar valor como promessa jurídica', () => {
-    const { api, elements } = loadFlow();
+    const frames = [];
+    const clock = { now: 1000 };
+    const { api, elements } = loadFlow({
+        clock,
+        requestAnimationFrameImpl: callback => {
+            frames.push(callback);
+            return frames.length;
+        },
+        cancelAnimationFrameImpl: () => {}
+    });
 
     assert.equal(typeof api.calculatePriorityScore, 'function');
-    assert.equal(api.calculatePriorityScore(false), 52);
-    assert.equal(api.calculatePriorityScore(true), 84);
+    assert.equal(api.calculatePriorityScore(false), 75.3);
+    assert.equal(api.calculatePriorityScore(true), 98.6);
 
-    api.updateUrgencyIndicator(84);
+    api.updateUrgencyIndicator(98.6);
+    finishAnimation(frames, clock);
 
-    assert.equal(elements.get('scoreValue').textContent, '84');
-    assert.equal(elements.get('scoreValue').getAttribute('aria-label'), 'Score de prioridade: 84 de 100');
-    assert.equal(elements.get('urgencyFill').style.width, '84%');
-    assert.equal(elements.get('urgencyMarker').style.left, '84%');
+    assert.equal(elements.get('scoreValue').textContent, '98,6%');
+    assert.equal(elements.get('scoreValue').getAttribute('aria-label'), 'Score de prioridade: 98,6%');
+    assert.equal(elements.get('urgencyFill').style.width, '98.6%');
+    assert.equal(elements.get('urgencyMarker').style.left, '98.6%');
     assert.equal(elements.get('urgencyIndicator').dataset.level, 'red');
+});
+
+test('score mantém o valor final entre 75,3% e 98,6%', () => {
+    const frames = [];
+    const clock = { now: 1000 };
+    const { api, elements } = loadFlow({
+        clock,
+        requestAnimationFrameImpl: callback => {
+            frames.push(callback);
+            return frames.length;
+        },
+        cancelAnimationFrameImpl: () => {}
+    });
+
+    api.updateUrgencyIndicator(0);
+    finishAnimation(frames, clock);
+    assert.equal(elements.get('scoreValue').textContent, '75,3%');
+    assert.equal(elements.get('urgencyFill').style.width, '75.3%');
+    assert.equal(elements.get('urgencyMarker').style.left, '75.3%');
+
+    api.updateUrgencyIndicator(120);
+    finishAnimation(frames, clock);
+    assert.equal(elements.get('scoreValue').textContent, '98,6%');
+    assert.equal(elements.get('urgencyFill').style.width, '98.6%');
+    assert.equal(elements.get('urgencyMarker').style.left, '98.6%');
+});
+
+test('score mínimo não transforma caso não urgente em alerta de prazo', () => {
+    const frames = [];
+    const clock = { now: 1000 };
+    const { api, elements } = loadFlow({
+        clock,
+        requestAnimationFrameImpl: callback => {
+            frames.push(callback);
+            return frames.length;
+        },
+        cancelAnimationFrameImpl: () => {}
+    });
+
+    resetState(api.state, { branch: 'empresa', urgent: false, outcome: 'qualificado' });
+    api.showAnalysis();
+    finishAnimation(frames, clock);
+
+    assert.equal(elements.get('scoreValue').textContent, '75,3%');
+    assert.equal(elements.get('urgencyIndicator').dataset.urgent, 'false');
+    assert.equal(elements.get('urgencyIndicator').dataset.level, 'red');
+    assert.equal(elements.get('urgencyFill').style.width, '75.3%');
+    assert.equal(elements.get('urgencyMarker').style.left, '75.3%');
+    assert.equal(elements.get('urgencyDeadlineNote').hidden, true);
+    assert.doesNotMatch(elements.get('urgencyStatus').textContent, /prazo/i);
+});
+
+test('score e termômetro começam em zero e avançam juntos até o percentual final', () => {
+    const frames = [];
+    const clock = { now: 1000 };
+    const { api, elements } = loadFlow({
+        reducedMotion: false,
+        clock,
+        requestAnimationFrameImpl: callback => {
+            frames.push(callback);
+            return frames.length;
+        },
+        cancelAnimationFrameImpl: () => {}
+    });
+
+    api.updateUrgencyIndicator(98.6);
+
+    assert.equal(elements.get('scoreValue').textContent, '0,0%');
+    assert.equal(elements.get('urgencyFill').style.width, '0%');
+    assert.equal(elements.get('urgencyMarker').style.left, '0%');
+    assert.equal(frames.length, 1);
+
+    clock.now = 1360;
+    frames.shift()();
+    const displayedScore = Number(elements.get('scoreValue').textContent.replace(',', '.').replace('%', ''));
+    assert.ok(displayedScore > 0 && displayedScore < 98.6);
+    const displayedPosition = displayedScore;
+    assert.equal(elements.get('urgencyFill').style.width, `${displayedPosition}%`);
+    assert.equal(elements.get('urgencyMarker').style.left, `${displayedPosition}%`);
+
+    clock.now = 2000;
+    frames.shift()();
+    assert.equal(elements.get('scoreValue').textContent, '98,6%');
+    assert.equal(elements.get('urgencyFill').style.width, '98.6%');
+    assert.equal(elements.get('urgencyMarker').style.left, '98.6%');
+});
+
+test('animação do resultado começa somente depois da tela final entrar', () => {
+    const frames = [];
+    const clock = { now: 1000 };
+    const { api, timeoutCalls } = loadFlow({
+        reducedMotion: false,
+        clock,
+        requestAnimationFrameImpl: callback => {
+            frames.push(callback);
+            return frames.length;
+        },
+        cancelAnimationFrameImpl: () => {}
+    });
+
+    resetState(api.state, { branch: 'empresa', outcome: 'qualificado' });
+    api.showQualifiedResult();
+
+    assert.equal(frames.length, 0);
+    const transition = timeoutCalls.find(call => call.delay === 220);
+    assert.ok(transition, 'a animação deve aguardar o fim da transição da tela');
+    transition.callback();
+    assert.equal(frames.length, 1);
+});
+
+test('resultado final informa o repasse ao especialista sem sugerir nova análise', () => {
+    const { api, elements } = loadFlow();
+    const { state, showAnalysis } = api;
+
+    resetState(state, { branch: 'empresa', outcome: 'qualificado', tags: ['empresa'] });
+    showAnalysis();
+
+    const finalCopy = [
+        elements.get('successLead').textContent,
+        elements.get('authorityTitle').textContent,
+        elements.get('documentsHint').textContent,
+        elements.get('urgencyStatus').textContent
+    ].join(' ');
+
+    assert.match(finalCopy, /especialista/i);
+    assert.match(finalCopy, /repassad/i);
+    assert.doesNotMatch(finalCopy, /para análise|análise especializada|adiantar a análise|enviar para análise/i);
 });
 
 test('payload de lead versiona consentimento e limita atribuição a UTMs', () => {
@@ -328,7 +476,7 @@ test('analytics mantém somente os campos permitidos, sem PII ou relato livre', 
     assert.doesNotMatch(serialized, /Relato livre/);
 });
 
-test('webhook placeholder não gera chamadas de rede e o handoff minimiza a mensagem', async () => {
+test('webhook real recebe lead e analytics sem expor conteúdo no handoff', async () => {
     const { api, networkCalls } = loadFlow();
     const { state, sendEvent, sendAnalyticsEvent, buildWhatsappHandoff } = api;
 
@@ -336,7 +484,8 @@ test('webhook placeholder não gera chamadas de rede e o handoff minimiza a mens
     resetState(state, { branch: 'processo', urgent: true, tags: ['processo'], valueLabel: 'Acima de R$ 500 mil' });
     await sendEvent({ event_type: 'lead_submission' });
     sendAnalyticsEvent('ramo_processo');
-    assert.deepEqual(networkCalls, []);
+    assert.deepEqual(networkCalls.map(call => call.kind), ['fetch', 'beacon']);
+    assert.ok(networkCalls.every(call => call.url === 'https://dinastia-n8n-webhook.q4obno.easypanel.host/webhook/quiz-events'));
 
     assert.equal(typeof buildWhatsappHandoff, 'function');
     const handoff = decodeURIComponent(buildWhatsappHandoff({
@@ -349,6 +498,10 @@ test('webhook placeholder não gera chamadas de rede e o handoff minimiza a mens
     assert.match(handoff, /Nome: Pessoa de teste/);
     assert.match(handoff, /Cidade\/UF: São Paulo\/SP/);
     assert.doesNotMatch(handoff, /Acima de R\$ 500 mil|Relato livre|respostas|Documentos/i);
+});
+
+test('frontend aponta para o webhook n8n validado', () => {
+    assert.match(source, /const N8N_WEBHOOK_URL = 'https:\/\/dinastia-n8n-webhook\.q4obno\.easypanel\.host\/webhook\/quiz-events';/);
 });
 
 test('submissão navega para o WhatsApp sem aguardar webhook que nunca resolve', () => {
@@ -375,7 +528,14 @@ test('submissão navega para o WhatsApp sem aguardar webhook que nunca resolve',
 });
 
 test('movimento reduzido pula análise temporizada e não inicia status rotativo', () => {
-    const { api, timeoutCalls, intervalCalls, elements } = loadFlow();
+    const frames = [];
+    const { api, timeoutCalls, intervalCalls, elements } = loadFlow({
+        requestAnimationFrameImpl: callback => {
+            frames.push(callback);
+            return frames.length;
+        },
+        cancelAnimationFrameImpl: () => {}
+    });
     const { state, showAnalysis } = api;
 
     resetState(state, { branch: 'empresa', outcome: 'qualificado', tags: ['empresa'] });
@@ -384,5 +544,8 @@ test('movimento reduzido pula análise temporizada e não inicia status rotativo
     assert.deepEqual(timeoutCalls, []);
     assert.deepEqual(intervalCalls, []);
     assert.equal(elements.get('successTitle').textContent, 'Análise concluída');
-    assert.equal(elements.get('scoreValue').textContent, '52');
+    assert.equal(elements.get('scoreValue').textContent, '0,0%');
+    assert.equal(elements.get('urgencyFill').style.width, '0%');
+    assert.equal(elements.get('urgencyMarker').style.left, '0%');
+    assert.equal(frames.length, 1);
 });

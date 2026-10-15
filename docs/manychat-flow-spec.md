@@ -155,10 +155,10 @@ Mensagem obrigatória antes da coleta:
 
 Mensagem-base:
 
-> Pronto, [nome]. Recebi as suas respostas e encaminhei o seu caso para a análise inicial. Um advogado da equipe da Dra. Ana Magalhães falará com você após a triagem da equipe. Para adiantar a análise, separe, se puder, os documentos relacionados ao seu ramo.
+> Pronto, [nome]. Recebi as suas respostas. Elas serão repassadas ao especialista da equipe da Dra. Ana Magalhães, que falará com você no próximo contato. Se puder, deixe separados os documentos relacionados ao seu ramo.
 
 Para `urgente`:
 
-> Como o seu caso pode envolver prazo, ele foi sinalizado para prioridade de análise. Isso não representa garantia de resultado ou de atendimento em prazo determinado.
+> Como o seu caso pode envolver prazo, ele foi sinalizado para prioridade de contato com o especialista. Isso não representa garantia de resultado ou de atendimento em prazo determinado.
 
 Não publicar prazo entre colchetes nem afirmar que uma integração externa foi concluída enquanto o n8n estiver desativado.

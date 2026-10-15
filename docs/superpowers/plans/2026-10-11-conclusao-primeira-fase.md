@@ -108,7 +108,7 @@ Fixar `data-quiz-theme="sculpted"`; remover o seletor visual do HTML; reduzir `t
 
 - [ ] **Step 4: Implementar o indicador de urgência**
 
-Criar um componente semântico com trilho, preenchimento vermelho e rótulo, sem percentual ou alegação estatística; respeitar `prefers-reduced-motion`; apresentar linguagem “Seu prazo pode já estar correndo” somente quando `state.urgent` for verdadeiro, sem garantia de resultado.
+Criar um componente semântico com trilho semafórico de 0% a 100%, preenchimento e marcador na posição correspondente ao score; exibir score percentual entre 75,3% e 98,6%, com uma casa decimal e animação sincronizada 0→valor; manter a tela de análise e transições decorativas estáticas em `prefers-reduced-motion`, sem remover o contador informativo; apresentar linguagem “Seu prazo já está correndo” somente quando `state.urgent` for verdadeiro, sem garantia de resultado.
 
 - [ ] **Step 5: Executar testes e validação sintática**
 

@@ -73,6 +73,8 @@ test('mantém as dez entradas verticais com o mapa público PF e PJ aprovado', (
     assert.match(styles, /\.audience-chip\s*\{[^}]*white-space:\s*nowrap\s*;/s);
     assert.match(styles, /@media\s*\(max-width:\s*600px\)[\s\S]*?\.entry-options \.opt\s*\{[^}]*grid-template-columns:\s*40px\s+minmax\(0,\s*1fr\)\s*;/s);
     assert.match(styles, /@media\s*\(max-width:\s*600px\)[\s\S]*?\.entry-options \.opt-arrow\s*\{[^}]*display:\s*none\s*;/s);
+    assert.match(styles, /@media\s*\(max-width:\s*600px\)[\s\S]*?\.entry-options \.opt-heading\s*\{[^}]*flex-direction:\s*row[^}]*justify-content:\s*space-between[^}]*width:\s*100%/s);
+    assert.match(styles, /@media\s*\(max-width:\s*600px\)[\s\S]*?\.entry-options \.opt-heading strong\s*\{[^}]*flex:\s*1\s+1\s+auto[^}]*min-width:\s*0/s);
 });
 
 test('protege a contenção horizontal do Sculpted no mobile', () => {
@@ -111,18 +113,39 @@ test('entrega score de prioridade, termômetro semafórico e cautela sem laudo',
     assert.match(html, /id="scoreValue"/i);
     assert.doesNotMatch(html, /class="authority-stat"[^>]+aria-live=/i);
     assert.match(html, /id="scoreValue"[^>]+aria-label="Score de prioridade:/i);
+    assert.match(html, /data-value="75\.3"[^>]+aria-label="Score de prioridade: 75,3%"[^>]*>75,3%/i);
+    assert.doesNotMatch(html, /Score de prioridade, de 0% a 100%/i);
+    assert.match(html, /Indicador de urgência, não é probabilidade nem promessa de resultado\./i);
     assert.match(html, /id="urgencyMarker"/i);
-    assert.match(html, /data-level="yellow"/i);
+    assert.match(html, /data-level="red"/i);
+    assert.match(html, /id="urgencyTrack"[^>]+aria-valuenow="75\.3"/i);
     assert.match(html, /<section[^>]+id="urgencyIndicator"[^>]+aria-labelledby="urgencyLabel"/i);
-    assert.match(html, /id="urgencyTrack"[^>]+aria-label="Termômetro de urgência"/i);
+    assert.match(html, /id="urgencyTrack"[^>]+aria-label="Termômetro de urgência"[^>]+aria-valuenow="75\.3"/i);
     assert.match(html, /id="urgencyFill"/i);
     assert.match(text, /Falta pouco\.\.\./i);
-    assert.match(html, /id="urgencyDeadlineNote"[^>]+hidden[^>]*>\s*Seu prazo pode já estar correndo\./i);
+    assert.match(html, /id="urgencyDeadlineNote"[^>]+hidden[^>]*>\s*Seu prazo já está correndo\./i);
     assert.match(text, /não garante resultado ou atendimento em prazo determinado/i);
+    assert.match(styles, /\.aside-title\s+em\s*\{[^}]*font-size:\s*clamp\(1\.45rem,\s*2\.2vw,\s*2rem\)[^}]*overflow-wrap:\s*break-word/s);
     assert.match(styles, /\.urgency-track\s*\{[\s\S]*?linear-gradient\([^)]*#6[0-9a-f]{5}[^)]*#d[0-9a-f]{5}[^)]*#9[0-9a-f]{5}/i);
     assert.match(styles, /\.urgency-marker\s*\{/s);
     assert.match(styles, /\.score-value\s*\{/s);
     assert.match(styles, /@media\s*\(prefers-reduced-motion:\s*reduce\)[\s\S]*?\.urgency-fill[\s\S]*?transition:\s*none/s);
+});
+
+test('copy de prazo usa linguagem direta e lateral mantém quebra editorial', () => {
+    assert.match(html, /Seu prazo já está correndo\. Esta sinalização não garante resultado ou atendimento em prazo determinado\./i);
+    assert.match(styles, /\.aside-title\s*>\s*span\s*,\s*\.aside-title\s+em\s*\{[^}]*display:\s*block/s);
+    assert.match(styles, /\.aside-title\s+em\s*\{[^}]*max-inline-size:\s*15ch[^}]*text-wrap:\s*balance/s);
+});
+
+test('cópia final orienta o repasse ao especialista e atualiza a chamada lateral', () => {
+    const text = visibleText(html);
+
+    assert.match(text, /Entenda se o caso merece acompanhamento do especialista/i);
+    assert.match(text, /serão repassadas ao especialista/i);
+    assert.match(text, /informações essenciais para o especialista/i);
+    assert.doesNotMatch(text, /merece análise jurídica/i);
+    assert.doesNotMatch(text, /Enviar para análise/i);
 });
 
 test('integração não mantém referências de produção ao legado de laudo ou score', () => {

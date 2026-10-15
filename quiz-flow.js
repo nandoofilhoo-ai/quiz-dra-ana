@@ -3,10 +3,13 @@
  * As decisões operacionais seguem docs/manychat-flow-spec.md.
  */
 
-const N8N_WEBHOOK_URL = 'https://n8n.seu-dominio.com/webhook/quiz-events';
+const N8N_WEBHOOK_URL = 'https://dinastia-n8n-webhook.q4obno.easypanel.host/webhook/quiz-events';
 const WHATSAPP_NUMBER = '5524992331416';
 const CONSENT_VERSION = 'web_form_v1';
+const MIN_PRIORITY_SCORE = 75.3;
+const MAX_PRIORITY_SCORE = 98.6;
 let scoreAnimationFrame = null;
+let scoreAnimationCancel = null;
 
 const ICONS = {
     process: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h9l3 3v15H6z"/><path d="M15 3v4h4M9 11h6M9 15h6"/></svg>',
@@ -38,7 +41,7 @@ const FLOW = {
             ['Qual o valor que o banco está cobrando?', VALUE_OPTIONS],
             ['Quais bens ou valores podem estar em risco?', [['Conta', 'conta'], ['Imóvel', 'imovel'], ['Veículo', 'veiculo'], ['Recebíveis', 'recebiveis'], ['Salário/dinheiro', 'salario_dinheiro'], ['Não sei', 'nao_sei']], { multiple: true, confirmLabel: 'Confirmar bens em risco' }]
         ],
-        result: 'Entendi. O processo será encaminhado para análise inicial com prioridade.',
+        result: 'Suas respostas sobre o processo, a cobrança e os bens em risco serão repassadas ao especialista responsável.',
         docs: 'Comunicação recebida, contrato da dívida e documentos dos bens ou valores envolvidos'
     },
     empresa: {
@@ -50,7 +53,7 @@ const FLOW = {
             ['Há garantia?', [['Aval dos sócios', 'avalista'], ['Imóvel/veículo', 'bem'], ['Recebíveis', 'recebiveis'], ['Fundo garantidor', 'fundo'], ['Não sei', 'nao_sei']]],
             ['A empresa funciona?', [['Faturando normalmente', 'normal'], ['Faturando pouco', 'pouco'], ['Parada', 'parada'], ['Não sei', 'nao_sei']]]
         ],
-        result: 'Entendi. Dívidas bancárias de empresa exigem análise dos contratos, garantias e do impacto no caixa.',
+        result: 'Suas respostas sobre as dívidas, garantias e o caixa da empresa serão repassadas ao especialista responsável.',
         docs: 'Contratos das dívidas e extratos dos últimos 3 meses'
     },
     bloqueio: {
@@ -60,7 +63,7 @@ const FLOW = {
             ['A origem é bancária, fiscal ou trabalhista?', [['Dívida bancária', 'bancaria'], ['Cobrança fiscal', 'fiscal'], ['Processo trabalhista', 'trabalhista'], ['Não sei', 'nao_sei']]],
             ['O que foi bloqueado e qual o impacto?', [['Conta', 'conta'], ['Recebíveis', 'recebiveis'], ['Salário', 'salario'], ['Reserva', 'reserva'], ['Outro', 'outro'], ['Não sei', 'nao_sei']]]
         ],
-        result: 'Entendi. A origem e o impacto do bloqueio precisam ser analisados antes de indicar o caminho adequado.',
+        result: 'Suas respostas sobre a origem, o impacto e os documentos do bloqueio serão repassadas ao especialista responsável.',
         docs: 'Extrato mostrando o bloqueio e número do processo, se houver'
     },
     recebiveis: {
@@ -71,7 +74,7 @@ const FLOW = {
             ['Qual a proporção aproximada?', [['Menos de 30%', 'menos_30'], ['30% a 60%', '30_60'], ['Mais de 60%', 'mais_60'], ['Praticamente tudo', 'tudo'], ['Não sei', 'nao_sei']]],
             ['As parcelas estão?', [['Em dia', 'em_dia'], ['Atrasadas', 'atrasadas'], ['Renegociadas e sem pagamento', 'renegociada'], ['Não sei', 'nao_sei']]]
         ],
-        result: 'Entendi. A retenção de recebíveis depende do contrato e do impacto sobre a operação da empresa.',
+        result: 'Suas respostas sobre a retenção, a dívida e o impacto no caixa serão repassadas ao especialista responsável.',
         docs: 'Contrato da dívida e extrato da maquininha ou da conta vinculada'
     },
     avalista: {
@@ -83,7 +86,7 @@ const FLOW = {
             ['O que teme perder?', [['Moradia', 'moradia'], ['Outros imóveis', 'imoveis'], ['Veículos', 'veiculos'], ['Salário/dinheiro', 'dinheiro'], ['Não sei', 'nao_sei']]],
             ['A empresa está?', [['Ativa', 'ativa'], ['Parada', 'parada'], ['Encerrada', 'encerrada'], ['Não sei', 'nao_sei']]]
         ],
-        result: 'Entendi. A responsabilidade de sócios e avalistas depende dos documentos e garantias assumidas.',
+        result: 'Suas respostas sobre as garantias, cobranças e o patrimônio em risco serão repassadas ao especialista responsável.',
         docs: 'Contrato com a sua assinatura e contrato social da empresa'
     },
     imovel: {
@@ -95,7 +98,7 @@ const FLOW = {
             ['Qual o uso do imóvel?', [['Moradia', 'moradia'], ['Investimento', 'investimento'], ['Comercial', 'comercial'], ['Não sei', 'nao_sei']]],
             ['Qual a faixa do saldo?', VALUE_OPTIONS]
         ],
-        result: 'Entendi. O momento do financiamento e os avisos recebidos precisam ser avaliados com os documentos.',
+        result: 'Suas respostas sobre as parcelas, os avisos e o financiamento serão repassadas ao especialista responsável.',
         docs: 'Contrato do financiamento e qualquer notificação recebida'
     },
     servidor: {
@@ -106,7 +109,7 @@ const FLOW = {
             ['Qual a dívida principal?', [['Consignado', 'consignado'], ['Débito em conta', 'conta'], ['Cartão consignado', 'cartao_consignado'], ['Cartão/cheque especial', 'cartao_cheque'], ['Várias', 'varias'], ['Não sei', 'nao_sei']]],
             ['Há quanto tempo existem empréstimos ou refinanciamentos?', [['Menos de 5 anos', 'menos_5'], ['5 a 10 anos', '5_10'], ['Mais de 10 anos', 'mais_10'], ['Não sei', 'nao_sei']]]
         ],
-        result: 'Entendi. Cada operação precisa ser avaliada individualmente, com atenção aos contratos e ao histórico dos empréstimos.',
+        result: 'Suas respostas sobre o vínculo, a renda e as dívidas serão repassadas ao especialista responsável.',
         docs: 'Contracheque mais recente e lista das dívidas'
     },
     golpe: {
@@ -118,7 +121,7 @@ const FLOW = {
             ['O que foi feito?', [['Boletim e reclamação', 'ambos'], ['Uma das duas', 'uma'], ['Nada', 'nada'], ['Não sei', 'nao_sei']]],
             ['Qual foi a resposta do banco?', [['Negou', 'negou'], ['Não respondeu', 'sem_resposta'], ['Devolveu parte', 'parcial'], ['Devolveu tudo', 'total'], ['Não sei', 'nao_sei']]]
         ],
-        result: 'Entendi. A dinâmica do golpe, a contestação e a resposta do banco precisam ser analisadas caso a caso.',
+        result: 'Suas respostas sobre o golpe, o PIX e o retorno do banco serão repassadas ao especialista responsável.',
         docs: 'Boletim de ocorrência, comprovante do PIX e resposta do banco'
     },
     exterior: {
@@ -127,7 +130,7 @@ const FLOW = {
             ['Qual é a situação?', [['Tenho conta ou dívida no Brasil', 'conta_divida'], ['Quero investir no Brasil', 'investir'], ['Imóvel no Brasil', 'imovel'], ['Outro assunto bancário', 'outro'], ['Não sei', 'nao_sei']]],
             ['Existe bloqueio, cobrança ou prazo?', [['Sim', 'sim'], ['Não', 'nao'], ['Não sei', 'nao_sei']]]
         ],
-        result: 'Entendi. A situação bancária ligada ao Brasil será encaminhada para análise inicial.',
+        result: 'Suas respostas sobre a situação bancária ligada ao Brasil serão repassadas ao especialista responsável.',
         docs: 'Documentos da conta, dívida ou patrimônio ligado ao Brasil'
     },
     outro: {
@@ -137,22 +140,22 @@ const FLOW = {
             ['Existe processo, bloqueio ou prazo?', [['Sim', 'sim'], ['Não', 'nao'], ['Não sei', 'nao_sei']]],
             ['Conte em uma ou duas frases o que está acontecendo.', []]
         ],
-        result: 'Entendi. O seu relato será encaminhado para análise inicial.',
+        result: 'Seu relato e suas respostas serão repassados ao especialista responsável.',
         docs: 'Contratos, extratos, notificações e comprovantes relacionados ao caso'
     }
 };
 
 const AUTHORITY_POINTS = {
-    processo: ['Prazos judiciais podem estar em andamento', 'A comunicação recebida ajuda a identificar a fase do processo', 'Contrato e bens em risco precisam ser analisados em conjunto'],
-    bloqueio: ['A origem do bloqueio muda a medida possível', 'O impacto sobre conta, recebíveis ou salário precisa ser entendido', 'Extrato e número do processo ajudam a definir o caminho'],
-    recebiveis: ['A retenção depende do que foi pactuado no contrato', 'A proporção retida revela o impacto sobre o caixa', 'Extratos e instrumentos da dívida precisam ser confrontados'],
-    empresa: ['Contratos bancários e garantias devem ser analisados', 'O impacto da dívida sobre o caixa orienta a estratégia', 'A situação da empresa ajuda a organizar a análise'],
-    avalista: ['A responsabilidade depende do que foi assinado', 'Processo ou bloqueio podem exigir atenção prioritária', 'Contrato e quadro societário precisam ser conferidos'],
-    imovel: ['A etapa da cobrança altera as medidas disponíveis', 'Cartório ou leilão podem exigir atenção prioritária', 'Contrato e avisos recebidos precisam ser avaliados juntos'],
-    servidor: ['Contracheque e histórico das dívidas orientam a análise', 'Cada operação precisa ser avaliada individualmente', 'A documentação contratual ajuda a identificar o contexto'],
-    golpe: ['Data, dinâmica do golpe e resposta do banco importam', 'Boletim, comprovantes e contestação ajudam a análise', 'A responsabilidade do banco é avaliada caso a caso'],
-    exterior: ['O vínculo bancário com o Brasil precisa ser identificado', 'Bloqueios, cobranças e prazos exigem análise do contexto', 'Documentos da conta, dívida ou imóvel ajudam a orientar o caso'],
-    outro: ['O relato será encaminhado para leitura individual', 'Processo, bloqueio ou prazo podem definir a prioridade', 'Documentos disponíveis ajudam a compreender a situação']
+    processo: ['Prazo judicial, fase do processo e bens em risco serão destacados', 'A comunicação recebida ajuda a contextualizar o caso', 'Contrato e documentos dos bens ou valores seguem como prioridades'],
+    bloqueio: ['A origem do bloqueio será destacada', 'O impacto sobre conta, recebíveis ou salário será informado', 'Extrato e número do processo seguem com o relato'],
+    recebiveis: ['Termos da retenção e contrato serão destacados', 'A proporção retida mostra o impacto sobre o caixa', 'Extratos e instrumentos da dívida seguem com as informações'],
+    empresa: ['Contratos bancários e garantias serão informados', 'O impacto da dívida sobre o caixa será destacado', 'A situação operacional da empresa compõe o encaminhamento'],
+    avalista: ['Documentos assinados e garantias assumidas serão informados', 'Processo ou bloqueio podem exigir atenção prioritária', 'Contrato social e patrimônio em risco compõem o encaminhamento'],
+    imovel: ['A etapa da cobrança será destacada', 'Cartório ou leilão podem exigir atenção prioritária', 'Contrato e avisos recebidos seguem com as informações'],
+    servidor: ['Contracheque e histórico das dívidas serão informados', 'Cada operação relatada compõe o encaminhamento', 'A documentação contratual ajuda a contextualizar o caso'],
+    golpe: ['Data, dinâmica do golpe e resposta do banco serão informadas', 'Boletim, comprovantes e contestação seguem com o relato', 'A resposta do banco será destacada para o especialista'],
+    exterior: ['O vínculo bancário com o Brasil será identificado', 'Bloqueios, cobranças e prazos serão destacados', 'Documentos da conta, dívida ou imóvel seguem com as informações'],
+    outro: ['O relato e as respostas seguem para o especialista', 'Processo, bloqueio ou prazo podem definir a prioridade', 'Documentos disponíveis ajudam a contextualizar a situação']
 };
 
 const DISMISSAL_OUTCOMES = new Set(['fora_do_bancario', 'golpe_fora_escopo', 'prejuizo_devolvido']);
@@ -384,8 +387,8 @@ function showDismissal(reason) {
 
 function getAuthorityContent(branch, urgent) {
     return {
-        tone: urgent ? 'urgent' : 'analysis',
-        title: urgent ? 'Seu caso pede atenção prioritária' : 'Pontos que merecem análise especializada',
+        tone: urgent ? 'urgent' : 'summary',
+        title: urgent ? 'Seu caso pede atenção prioritária' : 'Informações que serão repassadas ao especialista',
         points: AUTHORITY_POINTS[branch] || AUTHORITY_POINTS.outro
     };
 }
@@ -395,7 +398,24 @@ function prefersReducedMotion() {
 }
 
 function calculatePriorityScore(urgent) {
-    return urgent ? 84 : 52;
+    return urgent ? MAX_PRIORITY_SCORE : MIN_PRIORITY_SCORE;
+}
+
+function clampPriorityScore(value) {
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric)) return MIN_PRIORITY_SCORE;
+    return Math.max(MIN_PRIORITY_SCORE, Math.min(MAX_PRIORITY_SCORE, numeric));
+}
+
+function getUrgencyPosition(score) {
+    const numeric = Number(score);
+    if (!Number.isFinite(numeric)) return 0;
+    return Math.max(0, Math.min(100, numeric));
+}
+
+function formatScore(value) {
+    const score = Math.max(0, Math.min(100, Number(value) || 0));
+    return `${score.toFixed(1).replace('.', ',')}%`;
 }
 
 function getUrgencyLevel(score) {
@@ -406,27 +426,50 @@ function getUrgencyLevel(score) {
 
 function animateScore(targetScore) {
     const scoreElement = document.getElementById('scoreValue');
-    const score = Math.max(0, Math.min(100, Math.round(Number(targetScore) || 0)));
+    const fill = document.getElementById('urgencyFill');
+    const marker = document.getElementById('urgencyMarker');
+    const track = document.getElementById('urgencyTrack');
+    const score = clampPriorityScore(targetScore);
+    const targetPosition = getUrgencyPosition(score);
     if (!scoreElement) return;
-    if (scoreAnimationFrame !== null && typeof cancelAnimationFrame === 'function') {
-        cancelAnimationFrame(scoreAnimationFrame);
-        scoreAnimationFrame = null;
-    }
+    if (scoreAnimationCancel) scoreAnimationCancel();
+    scoreAnimationFrame = null;
+    scoreAnimationCancel = null;
 
-    const startValue = Math.max(0, Math.min(100, Number(scoreElement.dataset.value) || 0));
-    const setScore = value => {
-        scoreElement.textContent = String(value);
-        scoreElement.dataset.value = String(value);
-        scoreElement.setAttribute('aria-label', `Score de prioridade: ${value} de 100`);
+    const setVisual = (value, position = getUrgencyPosition(value)) => {
+        const current = Number(Math.max(0, Math.min(100, value)).toFixed(1));
+        const currentPosition = Number(Math.max(0, Math.min(100, position)).toFixed(1));
+        const formatted = formatScore(current);
+        scoreElement.textContent = formatted;
+        scoreElement.dataset.value = String(current);
+        scoreElement.setAttribute('aria-label', `Score de prioridade: ${formatted}`);
         if (typeof scoreElement.getAttribute !== 'function' && typeof scoreElement.setAttribute === 'function') {
             scoreElement.getAttribute = name => scoreElement[name] ?? null;
         }
+        if (fill) fill.style.width = `${currentPosition}%`;
+        if (marker) marker.style.left = `${currentPosition}%`;
+        if (track) track.setAttribute('aria-valuenow', String(currentPosition));
     };
 
-    if (prefersReducedMotion() || typeof requestAnimationFrame !== 'function') {
-        setScore(score);
-        return;
-    }
+    if (fill) fill.style.transition = 'none';
+    if (marker) marker.style.transition = 'none';
+    setVisual(0);
+
+    // O contador e o termômetro comunicam uma mudança de estado; continuam
+    // animados mesmo com movimento reduzido, enquanto as transições da tela
+    // de análise permanecem estáticas para evitar ruído visual.
+    const scheduleFrame = callback => {
+        if (typeof requestAnimationFrame === 'function') {
+            const frameId = requestAnimationFrame(callback);
+            scoreAnimationCancel = () => {
+                if (typeof cancelAnimationFrame === 'function') cancelAnimationFrame(frameId);
+            };
+            return frameId;
+        }
+        const timeoutId = setTimeout(callback, 16);
+        scoreAnimationCancel = () => clearTimeout(timeoutId);
+        return timeoutId;
+    };
 
     scoreElement.classList.add('is-counting');
     const startedAt = Date.now();
@@ -434,27 +477,27 @@ function animateScore(targetScore) {
     const frame = () => {
         const progress = Math.min(1, (Date.now() - startedAt) / duration);
         const eased = 1 - Math.pow(1 - progress, 3);
-        setScore(Math.round(startValue + ((score - startValue) * eased)));
+        setVisual(score * eased, targetPosition * eased);
         if (progress < 1) {
-            scoreAnimationFrame = requestAnimationFrame(frame);
+            scoreAnimationFrame = scheduleFrame(frame);
         } else {
             scoreAnimationFrame = null;
+            scoreAnimationCancel = null;
             scoreElement.classList.remove('is-counting');
         }
     };
-    scoreAnimationFrame = requestAnimationFrame(frame);
+    scoreAnimationFrame = scheduleFrame(frame);
 }
 
 function updateUrgencyIndicator(urgentOrScore) {
+    const urgent = typeof urgentOrScore === 'boolean' ? urgentOrScore : false;
     const score = typeof urgentOrScore === 'number'
-        ? Math.max(0, Math.min(100, Math.round(urgentOrScore)))
-        : calculatePriorityScore(Boolean(urgentOrScore));
-    const urgent = score >= 67;
-    const level = getUrgencyLevel(score);
+        ? clampPriorityScore(urgentOrScore)
+        : calculatePriorityScore(urgent);
+    const position = getUrgencyPosition(score);
+    const level = getUrgencyLevel(position);
     const indicator = document.getElementById('urgencyIndicator');
     const label = document.getElementById('urgencyLabel');
-    const fill = document.getElementById('urgencyFill');
-    const marker = document.getElementById('urgencyMarker');
     const track = document.getElementById('urgencyTrack');
     const status = document.getElementById('urgencyStatus');
     const deadline = document.getElementById('urgencyDeadlineNote');
@@ -462,21 +505,13 @@ function updateUrgencyIndicator(urgentOrScore) {
         indicator.dataset.urgent = String(urgent);
         indicator.dataset.level = level;
     }
-    if (label) label.textContent = urgent ? 'Atenção prioritária' : 'Análise inicial';
-    if (fill) {
-        fill.style.transition = prefersReducedMotion() ? 'none' : '';
-        fill.style.width = `${score}%`;
-    }
-    if (marker) {
-        marker.style.transition = prefersReducedMotion() ? 'none' : '';
-        marker.style.left = `${score}%`;
-    }
+    if (label) label.textContent = urgent ? 'Atenção prioritária' : 'Encaminhamento ao especialista';
     if (track) {
-        track.setAttribute('aria-valuenow', String(score));
+        track.setAttribute('aria-valuenow', String(position));
         track.setAttribute('aria-label', 'Termômetro de urgência');
     }
     animateScore(score);
-    if (status) status.textContent = urgent ? 'Seu caso foi sinalizado para prioridade de análise.' : 'Seu caso seguirá para análise inicial.';
+    if (status) status.textContent = urgent ? 'Seu caso foi sinalizado para prioridade de contato com o especialista.' : 'Seu caso será encaminhado ao especialista responsável.';
     if (deadline) deadline.hidden = !urgent;
 }
 
@@ -486,8 +521,8 @@ function showQualifiedResult() {
     const lead = document.getElementById('successLead');
     const hint = document.getElementById('documentsHint');
     title.textContent = 'Análise concluída';
-    lead.textContent = branch.result.replace(/^Entendi\.\s*/, '');
-    hint.textContent = `Para adiantar a análise, separe se puder: ${branch.docs}.`;
+    lead.textContent = branch.result;
+    hint.textContent = `Para facilitar o contato com o especialista, deixe separados, se puder: ${branch.docs}.`;
     const authority = getAuthorityContent(state.branch, state.urgent);
     const authorityCard = document.getElementById('authorityCard');
     const authorityTitle = document.getElementById('authorityTitle');
@@ -495,7 +530,6 @@ function showQualifiedResult() {
     if (authorityCard) authorityCard.dataset.tone = authority.tone;
     if (authorityTitle) authorityTitle.textContent = authority.title;
     if (authorityPoints) authorityPoints.innerHTML = authority.points.map(point => `<li>${point}</li>`).join('');
-    updateUrgencyIndicator(calculatePriorityScore(state.urgent));
     setContactVisibility(true);
     const ddiControl = document.getElementById('ddiControl');
     const ddiInput = document.getElementById('ddi');
@@ -503,7 +537,7 @@ function showQualifiedResult() {
     if (ddiInput) ddiInput.value = '+55';
     document.getElementById('progressWrap').style.display = 'block';
     document.getElementById('progressBar').style.width = '100%';
-    transitionToStep(document.getElementById('step4'));
+    transitionToStep(document.getElementById('step4'), () => updateUrgencyIndicator(state.urgent));
 }
 
 function updateProgress() {
@@ -513,11 +547,15 @@ function updateProgress() {
     if (bar) bar.style.width = `${Math.round((current / total) * 100)}%`;
 }
 
-function transitionToStep(target) {
+function transitionToStep(target, onComplete = null) {
     if (!target) return;
     const current = document.querySelector('.quiz-step.active');
     clearTimeout(state.transitionTimer);
-    if (current === target) { sendAutoHeight(); return; }
+    if (current === target) {
+        sendAutoHeight();
+        if (onComplete) onComplete();
+        return;
+    }
     if (current) { current.classList.remove('active'); current.classList.add('is-leaving'); }
     document.querySelectorAll('.quiz-step').forEach(step => {
         if (step !== current && step !== target) step.classList.remove('active', 'is-leaving');
@@ -528,6 +566,7 @@ function transitionToStep(target) {
         sendAutoHeight();
         const focus = target.querySelector('button, input, textarea');
         if (focus) focus.focus({ preventScroll: true });
+        if (onComplete) onComplete();
     };
     if (prefersReducedMotion()) {
         completeTransition();
